@@ -67,12 +67,16 @@ def _split(spec):
         return repo, sub
     return spec, None
 
-# Aliases people are likely to type.
+# Aliases people are likely to type. The `laya*` spellings stay because the checkpoints
+# still live in the upstream `convaiinnovations/laya*` repos and their short names must
+# keep resolving.
 _ALIASES = {
-    "en": "english", "dev": "english", "default": "english",
+    "en": "english", "dev": "english", "laya": "english", "default": "english",
     "multi": "multilingual", "ml": "multilingual", "dev-multilingual": "multilingual",
+    "laya-multilingual": "multilingual",
     "typed": "typed-decisions", "typed_decisions": "typed-decisions",
-    "dev-typed-decisions": "typed-decisions", "decisions": "typed-decisions",
+    "dev-typed-decisions": "typed-decisions", "laya-typed-decisions": "typed-decisions",
+    "decisions": "typed-decisions",
 }
 
 # Question-id signatures of the four typed-decisions workflows, used only when

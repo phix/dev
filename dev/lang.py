@@ -155,6 +155,7 @@ _STOP = {
 # language we hold no stopwords for at all (Romanian, Polish, Czech, Turkish, Baltic, ...),
 # which is the difference between routing it to the multilingual checkpoint and silently
 # handing it to the English one.
+_MAX_TEXT_CHARS = 4000
 _NON_EN_DIACRITICS = set(
     "àâäãáåçéèêëíìîïñóòôöõøúùûüýÿßæœ"          # Western European
     "ăâîșțşţ"                                   # Romanian
@@ -334,7 +335,11 @@ def latin_profile(text: str) -> Dict[str, object]:
     A non-English language is only named when it matched at least one word that no other list
     claims: shared function words alone (`la`, `e`, `o`) identify no particular language.
     """
-    # 'İ'.lower() is 'i' + a combining dot, which matches no word list
+    # 'İ'.lower() is 'i' + a combining dot, which matches no word list.
+    # _IDENTIFIER's nested quantifiers are quadratic on separator-free runs, so cap the
+    # input before the regex sees it (same 4000-char budget analyse() applies upstream;
+    # a direct caller passing megabytes of text must not get a minute of regex work).
+    text = text[:_MAX_TEXT_CHARS]
     words = _WORD.findall(_IDENTIFIER.sub(" ", text).replace("İ", "i").lower())
     lowered = text.lower()
     diac = sum(1 for ch in lowered if ch in _NON_EN_DIACRITICS)

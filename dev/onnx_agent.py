@@ -80,7 +80,9 @@ class ONNXAgent(HookRegistry):
             model_dir = snapshot_download(model_id_or_path, **kw)
 
         if subfolder:
-            model_dir = os.path.join(model_dir, subfolder)
+            from .agent import _resolve_subfolder
+
+            model_dir = _resolve_subfolder(model_dir, subfolder, model_id_or_path)
             if not os.path.isdir(model_dir):
                 raise FileNotFoundError(
                     f"Subfolder {subfolder!r} not found in {model_id_or_path!r}."

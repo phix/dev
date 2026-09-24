@@ -17,6 +17,7 @@ Environment (same meaning as dev.serve where it exists):
 from __future__ import annotations
 
 import json
+import logging
 import os
 import sys
 import threading
@@ -51,6 +52,10 @@ except Exception:  # running from a source checkout without install metadata
     import dev as _dev
 
     _DEV_VERSION = getattr(_dev, "__version__", "")
+
+# Internal-error details (paths, torch internals, exception text) are logged locally and
+# never returned to the MCP client, whose results an LLM prompt may incorporate.
+log = logging.getLogger("dev.mcp")
 
 server = MCPServer("dev", version=_DEV_VERSION)
 
@@ -103,14 +108,16 @@ def _ensure_router() -> Any:
         try:
             from dev import Router
         except Exception as exc:
-            raise ToolError("internal_error", f"cannot import dev: {exc}") from exc
+            log.exception("cannot import dev")
+            raise ToolError("internal_error", "cannot import dev") from exc
         try:
             _apply_thread_limit()
             router = Router(device=env_device())
             if _env_bool("DEV_PRELOAD", True):
                 router.preload(_models_from_env())
         except Exception as exc:
-            raise ToolError("internal_error", f"router construction failed: {exc}") from exc
+            log.exception("router construction failed")
+            raise ToolError("internal_error", "router construction failed") from exc
         _ROUTER = router
         return router
 
@@ -150,8 +157,9 @@ def _wrap(fn, **kwargs) -> str:
     except McpToolError:
         raise
     except Exception as exc:
+        log.exception("internal error in %s", getattr(fn, "__name__", "tool"))
         raise McpToolError(
-            _dump({"error": "internal_error", "message": f"{type(exc).__name__}: {exc}"})
+            _dump({"error": "internal_error", "message": type(exc).__name__})
         ) from exc
 
 

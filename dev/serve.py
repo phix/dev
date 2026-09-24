@@ -14,7 +14,7 @@ serves a laptop dev run and a systemd unit:
 ======================  ============================================  =========
 env var                 meaning                                        default
 ======================  ============================================  =========
-``DEV_HOST``           bind address                                   0.0.0.0
+``DEV_HOST``           bind address (loopback unless explicitly set)  127.0.0.1
 ``DEV_PORT``           bind port                                      8000
 ``DEV_DEVICE``         torch device for every checkpoint              (auto)
 ``DEV_PRELOAD``        build the checkpoints at startup, not lazily   1
@@ -27,6 +27,10 @@ env var                 meaning                                        default
 ``DEV_API_KEY``        if set, require ``Authorization: Bearer <it>``  (none)
 ``DEV_LOG_LEVEL``      uvicorn log level                              info
 ======================  ============================================  =========
+
+Exposure policy: ``DEV_HOST`` defaults to loopback, so serving beyond the machine is
+opt-in. Binding a non-loopback address without ``DEV_API_KEY`` prints a warning; set
+``DEV_API_KEY`` to require ``Authorization: Bearer <key>`` on every inference request.
 
 Imports of heavy dependencies (fastapi, uvicorn, torch via Router) are all
 deferred into the functions that need them, so ``import dev.serve`` stays cheap
@@ -286,11 +290,19 @@ def create_app(router: Optional[Any] = None):
 
 
 def main() -> None:
+    import sys
     import uvicorn
 
+    host = (os.environ.get("DEV_HOST") or "127.0.0.1").strip() or "127.0.0.1"
+    if host not in ("127.0.0.1", "localhost", "::1") and not os.environ.get("DEV_API_KEY"):
+        print(
+            "dev: warning: binding %s without DEV_API_KEY exposes the inference API "
+            "unauthenticated. Set DEV_API_KEY, or bind to 127.0.0.1." % host,
+            file=sys.stderr,
+        )
     uvicorn.run(
         create_app(),
-        host=os.environ.get("DEV_HOST", "0.0.0.0"),
+        host=host,
         port=_resolve_port(),
         log_level=os.environ.get("DEV_LOG_LEVEL", "info"),
     )

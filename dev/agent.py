@@ -85,6 +85,29 @@ def _fix_tokenizer_config(path: str):
             RuntimeWarning, stacklevel=2)
 
 
+def _resolve_subfolder(model_dir: str, subfolder: Optional[str], model_id: str) -> str:
+    """Join `subfolder` under a model directory, refusing path traversal.
+
+    `subfolder` names a checkpoint inside a repo bundle (e.g. "multilingual"). It is
+    caller-controlled input in the same class as the repo id, so `../` segments or absolute
+    paths must not be able to escape into arbitrary local directories: loading a checkpoint
+    reads its config and weights from the resolved directory.
+    """
+    if subfolder is None:
+        return model_dir
+    if (subfolder.startswith(("/", "\\")) or os.path.isabs(subfolder) or "\x00" in subfolder
+            or any(seg == ".." for seg in subfolder.replace("\\", "/").split("/"))):
+        raise ValueError(
+            f"Invalid subfolder {subfolder!r} for {model_id!r}: must be a relative path "
+            "inside the repo (no '..' or absolute paths)."
+        )
+    target = os.path.join(model_dir, subfolder)
+    real_root = os.path.realpath(model_dir)
+    if os.path.commonpath([real_root, os.path.realpath(target)]) != real_root:
+        raise ValueError(f"Invalid subfolder {subfolder!r} for {model_id!r}: escapes the model directory.")
+    return target
+
+
 def _verify_compatibility(model: torch.nn.Module, cfg: Dict, weights: Dict[str, torch.Tensor], model_id: str):
     """Verify that the loaded checkpoint weights and config strictly match the expected architecture."""
     # 1. Verify required configuration attributes
@@ -270,7 +293,7 @@ class Agent(HookRegistry):
             model_dir = snapshot_download(model_id_or_path, **kw)
 
         if subfolder:
-            model_dir = os.path.join(model_dir, subfolder)
+            model_dir = _resolve_subfolder(model_dir, subfolder, model_id_or_path)
             if not os.path.isdir(model_dir):
                 raise FileNotFoundError(
                     f"Subfolder {subfolder!r} not found in {model_id_or_path!r}."

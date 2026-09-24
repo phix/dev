@@ -1,0 +1,19 @@
+Dev
+Copyright 2026 Dev fork maintainers
+
+This product is a fork of Laya (https://github.com/NandhaKishorM/laya),
+Copyright Convai Innovations, licensed under the Apache License, Version 2.0
+(see LICENSE).
+
+Modifications from upstream:
+- Rebranding: import package `dev`, CLIs `dev` / `dev-serve` / `dev-mcp-server`,
+  environment variables `DEV_*`, TypeScript package `dev-ts`.
+- Security hardening: loopback-only server default with a warning on
+  unauthenticated non-loopback bindings, redacted MCP internal-error details,
+  path-traversal containment for model subfolders, bounded regex/BPE work on
+  untrusted text, reserved-key rejection (prototype-pollution defense),
+  HTTPS-only and size-capped model downloads in the TypeScript SDK,
+  weights_only (non-pickle) checkpoint export, pinned CI action SHAs, and a
+  security policy (SECURITY.md).
+
+See the git history for the full change set.

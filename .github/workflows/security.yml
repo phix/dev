@@ -19,7 +19,8 @@ jobs:
         with:
           fetch-depth: 0          # gitleaks needs history to scan every commit in the PR
       - name: gitleaks (diff)
-        uses: gitleaks/gitleaks-action@v3
+        # Pinned to the v3 tag commit so a moving tag cannot swap the action underneath CI.
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e
         env:
           GITHUB_TOKEN: ${{ github.token }}
 

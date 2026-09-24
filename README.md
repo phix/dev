@@ -10,21 +10,30 @@
 <div align="center">
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/15d4Yv__KHeHjshVb-6PRTfqVllxih2S3?usp=sharing)
-[![PyPI version](https://img.shields.io/pypi/v/dev.svg)](https://pypi.org/project/dev/)
-[![Docs](https://img.shields.io/badge/docs-online-2ea44f)](https://nandhakishorm.github.io/dev/)
 [![Hugging Face Model](https://img.shields.io/badge/%F0%9F%A4%97%20Model-convaiinnovations%2Flaya-blue)](https://huggingface.co/convaiinnovations/laya)
-[![Multilingual](https://img.shields.io/badge/%F0%9F%A4%97%20Model-dev--multilingual-blue)](https://huggingface.co/convaiinnovations/laya-multilingual)
-[![Hugging Face Space](https://img.shields.io/badge/%F0%9F%A4%97%20Space-dev--demo-orange)](https://huggingface.co/spaces/convaiinnovations/laya-demo)
+[![Multilingual](https://img.shields.io/badge/%F0%9F%A4%97%20Model-multilingual-blue)](https://huggingface.co/convaiinnovations/laya-multilingual)
+[![Hugging Face Space](https://img.shields.io/badge/%F0%9F%A4%97%20Space-demo-orange)](https://huggingface.co/spaces/convaiinnovations/laya-demo)
 [![Dev.to Article](https://img.shields.io/badge/dev.to-Read%20Article-0A0A0A?logo=devdotto&logoColor=white)](https://dev.to/nandakishor_m_6cc0adfde9f/i-built-non-autoregressive-decision-models-a-year-ago-then-a-frontier-lab-called-it-a-18me)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-nandakishorm-FFDD00?logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/nandakishorm)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 
 </div>
 
+> **Dev is a security-hardened fork of [Laya](https://github.com/NandhaKishorM/laya)** (Apache-2.0, © Convai Innovations).
+> Upstream's model checkpoints (`convaiinnovations/laya*`) are reused unchanged, and the Apache-2.0
+> license plus attribution are retained (see [NOTICE](NOTICE)). Changes: package/CLI/env rebrand
+> (`import dev`, `dev-serve`, `DEV_*`), loopback-only server default with an authentication
+> requirement for remote bindings, redacted MCP error details, and further hardening —
+> see [SECURITY.md](SECURITY.md).
+
 ## Installation
 
+> **Internal fork:** install from this repository (`pip install .` from a checkout).
+> The `dev` name on public PyPI belongs to an unrelated package; publishing this fork
+> publicly would need a unique distribution name.
+
 ```bash
-python -m pip install dev
+python -m pip install .
 ```
 
 Python 3.10 or newer. Optional extras: `dev[serve]` (HTTP server), `dev[mcp]` (MCP server), `dev[langchain]` (LangChain and LangGraph), `dev[onnx]` (ONNX Runtime), `dev[fast]` (TileLang GPU fast path). Step-by-step setup for each platform, CPU-only or GPU PyTorch builds, and troubleshooting are in [Installation details](#installation-details).

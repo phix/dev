@@ -162,7 +162,8 @@ check_true("compose.http/publishes a port", re.search(r"^\s*ports:", http, re.M)
 # Host and container port must come from the same variable, or they drift apart and the
 # published port stops reaching the server.
 port_map = re.search(r'-\s*"(?:\$\{DEV_BIND_ADDRESS:-[^}]+\}:)?(\$\{[A-Z_]+:-(\d+)\}):(\$\{[A-Z_]+:-(\d+)\})"', http)
-# The API is unauthenticated until DEV_API_KEY is set, so exposure beyond the host is opt-in.
+# The server binds loopback by default and warns when a non-loopback bind has no
+# DEV_API_KEY, so exposure beyond the host is doubly opt-in.
 check_true("compose.http/publishes on loopback unless DEV_BIND_ADDRESS is set",
            '"${DEV_BIND_ADDRESS:-127.0.0.1}:' in http)
 check_true("compose.http/has a healthcheck on /health",

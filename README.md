@@ -26,6 +26,40 @@
 > requirement for remote bindings, redacted MCP error details, and further hardening —
 > see [SECURITY.md](SECURITY.md).
 
+## What is Dev
+
+Dev is a fast, local decision engine for **typed judgments** — the small, well-defined calls
+software needs to make constantly, where a generative LLM is slow, expensive, and often wrong:
+
+- **choice** — pick one label from a fixed set (*route this ticket to billing, support, or sales?*)
+- **score** — rate on an ordered rubric (*urgency 0–3?*)
+- **noul** — calibrated P(true) for a yes/no (*is this a refund request?*)
+
+Every question is answered in **one forward pass** (~33 ms on GPU, a few hundred ms on CPU), in
+100+ languages, with **calibrated probabilities you can gate on**, entirely on your own hardware.
+No hosted API, no text generation, no hallucination. A router picks the right checkpoint per
+request (English / multilingual / typed-decisions), and the same call works as a Python package,
+a Jev-compatible HTTP server (`dev-serve`), an MCP server (`dev-mcp-server`), or a TypeScript SDK.
+
+## Why Dev exists
+
+Dev is a fork of [Laya](https://github.com/NandhaKishorM/laya), an excellent and already careful
+codebase. The fork exists to make it **safe and boring for company adoption**:
+
+1. **Safer defaults.** The HTTP server binds loopback only and expects an API key for remote
+   exposure (upstream defaulted to an unauthenticated `0.0.0.0` bind).
+2. **A completed security pass.** A line-by-line audit of the Python and TypeScript code fixed
+   path traversal in model subfolders, pickle deserialization in the export helper, redaction of
+   internal error details from MCP results, quadratic regex/BPE work on untrusted text,
+   prototype-pollution keys, HTTPS-only and size-capped downloads, and an outdated dev toolchain
+   (`npm audit`: 0). The audit and the trust model are documented in [SECURITY.md](SECURITY.md).
+3. **Compliance kept simple.** Apache-2.0 with attribution retained (`LICENSE`, `NOTICE`);
+   model checkpoints are upstream's, reused unchanged.
+4. **One self-contained package.** `import dev`, `dev-serve`, `dev-mcp-server`, `DEV_*` env vars.
+
+If you just want the upstream engine, use Laya. If you need a version whose defaults and audit
+trail you can defend in front of a security review, use Dev.
+
 ## Installation
 
 > **Internal fork:** install from this repository (`pip install .` from a checkout).

@@ -120,6 +120,7 @@ const SHARED_WORDS: Set<string> = (() => {
 const WORD_RE = /[^\W\d_]+/gu;
 const IDENTIFIER_RE = /[\p{L}\p{N}_-]*(?:[.@][\p{L}\p{N}_-]+)+/gu;
 const IS_ALPHA_RE = /\p{L}/u;
+const MAX_TEXT_CHARS = 4000;
 
 // Python uses two different boundaries on purpose: detect_script/script_profile count the IPA
 // Extensions block (0x0250-0x02AF) as Latin, while _script_of (used for non-Latin word runs)
@@ -245,10 +246,14 @@ export interface LatinProfile {
 }
 
 export function latinProfile(text: string): LatinProfile {
-  const stripped = text.replace(IDENTIFIER_RE, " ");
+  // IDENTIFIER_RE's nested quantifiers are quadratic on separator-free runs (verified:
+  // ~9 s at 100k chars). Cap input the way analyse()'s stateText() does before the regex
+  // sees it, so a direct caller passing megabytes of untrusted text cannot get a regex DoS.
+  const capped = text.slice(0, MAX_TEXT_CHARS);
+  const stripped = capped.replace(IDENTIFIER_RE, " ");
   const rawWords = stripped.match(WORD_RE) ?? [];
   const words = rawWords.map((w) => w.toLowerCase());
-  const lowered = text.toLowerCase();
+  const lowered = capped.toLowerCase();
   let diac = 0;
   for (const ch of lowered) {
     if (NON_EN_DIACRITICS.has(ch)) diac += 1;

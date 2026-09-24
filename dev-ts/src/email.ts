@@ -136,6 +136,8 @@ export function cleanEmailBody(body: string, maxChars = 3000): string {
   return out.slice(0, maxChars);
 }
 
+const RESERVED_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+
 export function emailState(
   subject: string,
   body: string,
@@ -149,7 +151,9 @@ export function emailState(
   };
   if (sender) state["from"] = sender;
   for (const [k, v] of Object.entries(extra ?? {})) {
-    if (v !== null && v !== undefined) state[k] = v;
+    // Never let caller-supplied keys touch the prototype chain ("__proto__" swaps the
+    // returned object's prototype); drop them instead of silently corrupting the state.
+    if (v !== null && v !== undefined && !RESERVED_KEYS.has(k)) state[k] = v;
   }
   return state;
 }

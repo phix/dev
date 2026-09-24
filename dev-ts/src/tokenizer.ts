@@ -74,6 +74,11 @@ function bpeWord(chars: string[], rank: Map<string, number>): string[] {
 
 /** Byte-level BPE encode: NFC-normalize, NO lowercasing, GPT-2 byte map + rank-order merges. */
 let sharedEncoder: TextEncoder | null = null;
+// bpeWord is O(n^2) in the run length; one huge separator-free run (base64-ish blobs in
+// email bodies) would take 10^12 operations. Chunk above this cap: normal words are far
+// below it, and chunked merges of pathological input are an acceptable approximation.
+const MAX_BPE_PIECE = 1024;
+
 export function bpeEncode(vocab: Map<string, number>, merges: Map<string, number>, text: string): number[] {
   const { b2u } = maps();
   const unkId = vocab.get("[UNK]") ?? CHECKPOINT_IDS.unk;
@@ -82,9 +87,12 @@ export function bpeEncode(vocab: Map<string, number>, merges: Map<string, number
   const parts = text.normalize("NFC").match(GPT2_SPLIT);
   if (!parts) return out;
   for (const piece of parts) {
-    const chars: string[] = [];
-    for (const b of enc.encode(piece)) chars.push(b2u.get(b) ?? "");
-    for (const tok of bpeWord(chars, merges)) out.push(vocab.get(tok) ?? unkId);
+    const raw = enc.encode(piece);
+    for (let s = 0; s < raw.length; s += MAX_BPE_PIECE) {
+      const chars: string[] = [];
+      for (const b of raw.subarray(s, s + MAX_BPE_PIECE)) chars.push(b2u.get(b) ?? "");
+      for (const tok of bpeWord(chars, merges)) out.push(vocab.get(tok) ?? unkId);
+    }
   }
   return out;
 }

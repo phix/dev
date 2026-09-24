@@ -138,7 +138,12 @@ def main(argv=None):
         for name in ("model.safetensors", "pytorch_model.bin"):
             path = os.path.join(model_dir, name)
             if os.path.exists(path):
-                state = _load_safetensors(path) if name.endswith(".safetensors") else torch.load(path, map_location="cpu")
+                if name.endswith(".safetensors"):
+                    state = _load_safetensors(path)
+                else:
+                    # Pickle deserialization is arbitrary code execution; this script only
+                    # needs tensor state dicts, so never unpickle checkpoint files.
+                    state = torch.load(path, map_location="cpu", weights_only=True)
                 model.load_state_dict(state, strict=False)
                 break
     except ImportError:

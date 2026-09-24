@@ -91,7 +91,8 @@ function applyNumThreads(ort: any, numThreads?: number): void {
       numThreads ??
       (typeof process !== "undefined" ? Number((process as any).env?.["DEV_THREADS"]) : NaN);
     if (Number.isFinite(raw) && (raw as number) > 0 && ort?.env) {
-      ort.env.numThreads = Math.trunc(raw as number);
+      // Clamp: an enormous thread count is a resource-exhaustion footgun, not a speedup.
+      ort.env.numThreads = Math.min(128, Math.max(1, Math.trunc(raw as number)));
     }
   } catch {
     /* best-effort only */
@@ -101,6 +102,54 @@ function applyNumThreads(ort: any, numThreads?: number): void {
 function isOomError(e: unknown): boolean {
   const m = String((e as any)?.message ?? e).toLowerCase();
   return m.includes("memory") || m.includes("cuda") || m.includes("out of memory") || m.includes("oom");
+}
+
+/** Upper bound for any single model download (configs, tokenizers, ONNX graphs).
+ * Real checkpoints fit comfortably; a malicious repo must not be able to make the
+ * client buffer unbounded bytes. */
+const MAX_FETCH_BYTES = 4 * 1024 * 1024 * 1024;
+
+/** Subfolders are caller-controlled path segments: plain relative segments only. */
+function assertSafeSubfolder(sub: string): string {
+  if (/^[A-Za-z0-9._-]+(\/[A-Za-z0-9._-]+)*$/.test(sub) && !sub.split("/").includes("..")) {
+    return sub;
+  }
+  throw new Error(`Invalid subfolder ${JSON.stringify(sub)}: must be a relative path of plain segments (no "..").`);
+}
+
+/** Model fetches go to HTTPS endpoints only; never send tokens to a plain-http URL. */
+function assertHttpsUrl(url: string): string {
+  if (!/^https:\/\//i.test(url)) throw new Error(`Refusing non-HTTPS model URL: ${url}`);
+  return url;
+}
+
+/** Read a response body, aborting past MAX_FETCH_BYTES instead of buffering unbounded. */
+async function readCapped(res: Response, cap = MAX_FETCH_BYTES): Promise<ArrayBuffer> {
+  if (!res.body) return res.arrayBuffer();
+  const reader = res.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > cap) {
+        await reader.cancel();
+        throw new Error(`download exceeds ${cap} bytes`);
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const out = new Uint8Array(total);
+  let off = 0;
+  for (const c of chunks) {
+    out.set(c, off);
+    off += c.byteLength;
+  }
+  return out.buffer;
 }
 
 /** Online-first fetch: try network, cache on success, fall back to CacheStorage. */
@@ -133,7 +182,7 @@ async function fetchArrayBuffer(url: string): Promise<ArrayBuffer> {
         } catch {
           /* cache full/blocked: still return network bytes */
         }
-        return await res.arrayBuffer();
+        return await readCapped(res);
       }
     } catch (e) {
       if (hit) {
@@ -177,7 +226,7 @@ export async function loadNodeBundle(
   const fs: typeof import("node:fs/promises") = await import("node:fs/promises");
   const path: typeof import("node:path") = await import("node:path");
   const os: typeof import("node:os") = await import("node:os");
-  const sub = opts?.subfolder ?? null;
+  const sub = opts?.subfolder ? assertSafeSubfolder(opts.subfolder) : null;
   let dir = opts?.localDir ?? modelDirOrRepo;
   try {
     const st = await fs.stat(sub ? path.join(dir, sub) : dir);
@@ -243,9 +292,9 @@ export interface WebBundle {
 }
 
 function baseUrlFor(repoOrUrl: string, subfolder?: string | null): string {
-  const sub = subfolder ? `/${subfolder.replace(/^\/+|\/+$/g, "")}` : "";
+  const sub = subfolder ? `/${assertSafeSubfolder(subfolder.replace(/^\/+|\/+$/g, ""))}` : "";
   if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(repoOrUrl)) {
-    return `${repoOrUrl.replace(/\/+$/, "")}${sub}`;
+    return `${assertHttpsUrl(repoOrUrl.replace(/\/+$/, ""))}${sub}`;
   }
   return `https://huggingface.co/${repoOrUrl}/resolve/main${sub}`;
 }

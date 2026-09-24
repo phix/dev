@@ -108,7 +108,12 @@ function qidStr(qid: string): string {
   return JSON.stringify(qid);
 }
 
+const RESERVED_QIDS = new Set(["__proto__", "constructor", "prototype"]);
+
 export function checkQuestion(qid: string, qdef: unknown): void {
+  if (RESERVED_QIDS.has(qid)) {
+    throw new Error(`question ${qidStr(qid)}: this id is reserved; choose another name`);
+  }
   if (typeof qdef !== "object" || qdef === null || Array.isArray(qdef)) {
     const got = Array.isArray(qdef) ? "list" : qdef === null ? "NoneType" : typeof qdef;
     throw new Error(`question ${qidStr(qid)}: definition must be a dict, got ${got}`);

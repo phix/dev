@@ -178,7 +178,10 @@ export class Router extends HookRegistry {
     }
     this.device = opts.device ?? null;
     this.token = opts.token ?? (typeof process !== "undefined" ? process.env?.["HF_TOKEN"] : undefined);
-    this.maxLoaded = Math.max(1, Math.trunc(Number(opts.maxLoaded ?? opts.max_loaded ?? 2)));
+    const rawMaxLoaded = Number(opts.maxLoaded ?? opts.max_loaded ?? 2);
+    // NaN would silently disable LRU eviction (`len > NaN` is false) and grow the agent
+    // cache without bound; treat any non-finite value as the default.
+    this.maxLoaded = Number.isFinite(rawMaxLoaded) ? Math.max(1, Math.trunc(rawMaxLoaded)) : 2;
     this.default = normaliseName(opts.default ?? "english");
     this.autoTaskDetection = Boolean(opts.autoTaskDetection ?? opts.auto_task_detection ?? false);
     this.langGuess = opts.langGuess ?? opts.lang_guess ?? null;

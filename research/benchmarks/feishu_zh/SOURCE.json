@@ -20,11 +20,11 @@
       "sha256": "a1dfd4de1819117cbd1470a187e2e8dd8f4cce7469c9c3c98befe1a282beab23"
     },
     {
-      "path": "results/v1/laya/metadata.json",
+      "path": "results/v1/dev/metadata.json",
       "sha256": "999851aa84a713ebd983d3d05ca074eadc5d2fe70af6dfa0efc546582607c40a"
     },
     {
-      "path": "results/v1/laya/raw.jsonl",
+      "path": "results/v1/dev/raw.jsonl",
       "sha256": "1c8dab17062f9244888f580907b62a845cf1e7b199e7041810a9301bd55c28e0"
     },
     {

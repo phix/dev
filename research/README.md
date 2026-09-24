@@ -1,24 +1,24 @@
 # Research
 
-Benchmark harnesses and raw results for the Laya checkpoints. This branch is the evidence behind
-the numbers quoted in the main README — nothing here is imported by the `laya` package.
+Benchmark harnesses and raw results for the Dev checkpoints. This branch is the evidence behind
+the numbers quoted in the main README — nothing here is imported by the `dev` package.
 
 ## Community diagnostics
 
-- [Chinese workplace decisions (Feishu-style)](benchmarks/feishu_zh/README.md) — 64 synthetic scenarios, paired recorded Laya/Jev responses, English/Chinese cards, and a model-free audit. [中文入口](benchmarks/feishu_zh/README.zh-CN.md). Start with `python research/benchmarks/feishu_zh/audit.py`; no downloads or API keys required. This is a contributed historical snapshot, separate from the upstream sweeps below.
+- [Chinese workplace decisions (Feishu-style)](benchmarks/feishu_zh/README.md) — 64 synthetic scenarios, paired recorded Dev/Jev responses, English/Chinese cards, and a model-free audit. [中文入口](benchmarks/feishu_zh/README.zh-CN.md). Start with `python research/benchmarks/feishu_zh/audit.py`; no downloads or API keys required. This is a contributed historical snapshot, separate from the upstream sweeps below.
 
 ## Scripts
 
 | file | what it does |
 |---|---|
-| `scripts/laya_benchmark_colab.ipynb` | the full head-to-head on a Colab T4: typed-decisions, MASSIVE intent + scenario (14 languages), XNLI (15), English suites, latency, option-order robustness, calibration repair. Writes one JSON. |
+| `scripts/dev_benchmark_colab.ipynb` | the full head-to-head on a Colab T4: typed-decisions, MASSIVE intent + scenario (14 languages), XNLI (15), English suites, latency, option-order robustness, calibration repair. Writes one JSON. |
 | `scripts/build_benchmark_nb.py` | generator for that notebook (edit here, not the `.ipynb`) |
 | `scripts/bench_local.py` | CPU sweep: MASSIVE intent across **all 51 languages**, plus typed-decisions on all three checkpoints |
 | `scripts/bench_apps.py` | the six application workflows (support triage, email + phishing, guardrails, RAG relevance, moderation, model routing) plus the datasets where public Jev numbers exist |
 | `scripts/bench_latency.py` | inference speed including what routing costs: detection overhead, hot path, cold-swap, mixed-language throughput at several `max_loaded` settings |
 | `scripts/bench_length_batching.py` | compare upstream contiguous batches with optional length sorting on synthetic tickets, including output consistency and optional fresh-process memory profiles (`psutil` required for memory mode) |
-| `scripts/make_plots.py` | renders `assets/laya_benchmark.png` from the result JSONs |
-| `scripts/bench_long_context.py` | `laya-multilingual` on long documents: 20 support requests in 8 languages, each placed after 0 to 7,000 tokens of unrelated text, scored at the default limit and at `max_len=8192` |
+| `scripts/make_plots.py` | renders `assets/dev_benchmark.png` from the result JSONs |
+| `scripts/bench_long_context.py` | `dev-multilingual` on long documents: 20 support requests in 8 languages, each placed after 0 to 7,000 tokens of unrelated text, scored at the default limit and at `max_len=8192` |
 | `scripts/plot_long_context.py` | renders `assets/long_context_8192.png` from `results/long_context_multilingual.json` |
 
 Everything runs with `USE_TF=0` — `transformers` probes for TensorFlow at import, and when TF is
@@ -74,7 +74,7 @@ python research/scripts/bench_length_batching.py MODEL_DIR --count 64 --batch-si
 
 ## Headline findings
 
-**Routing takes Laya from 23 to 45 of 51 languages.** On MASSIVE intent (20 options, random =
+**Routing takes Dev from 23 to 45 of 51 languages.** On MASSIVE intent (20 options, random =
 0.050) the English checkpoint macro-averages 0.227 and clears 3x random on 23 of 51 languages;
 the multilingual checkpoint reaches 0.366 and clears it on 45.
 
@@ -84,8 +84,8 @@ confidence never dropping below 0.885 at any accuracy level. This is why routing
 *before* the forward pass — confidence gating cannot catch it.
 
 **Both checkpoints ship over-confident.** Refitting one temperature per (question type, option
-count) on held-out data moves mean ECE 0.466 -> 0.081 (`laya`) and 0.314 -> 0.106
-(`laya-multilingual`, which ships with no fitted temperatures at all).
+count) on held-out data moves mean ECE 0.466 -> 0.081 (`dev`) and 0.314 -> 0.106
+(`dev-multilingual`, which ships with no fitted temperatures at all).
 
 **The base checkpoints are near chance on typed-decisions zero-shot** — 0.362 and 0.352 against
 a 0.318 random baseline and a 0.461 majority-class baseline. The published 0.766 belongs to the

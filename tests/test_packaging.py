@@ -65,18 +65,18 @@ for field in ("python_requires", "install_requires", "classifiers"):
         "metadata belongs in pyproject.toml only",
     )
 
-# The release job checks the git tag against pyproject, but laya.__version__ is what the server
+# The release job checks the git tag against pyproject, but dev.__version__ is what the server
 # and SDK report at runtime, so the two strings must not drift apart.
 static_version = re.search(r'^version\s*=\s*"([^"]+)"', pyproject, re.M)
 check_true("pyproject/declares a static version", static_version is not None)
-init_version = re.search(r'^__version__\s*=\s*"([^"]+)"', read(os.path.join("laya", "__init__.py")), re.M)
-check_true("laya/__init__ declares a literal __version__", init_version is not None)
+init_version = re.search(r'^__version__\s*=\s*"([^"]+)"', read(os.path.join("dev", "__init__.py")), re.M)
+check_true("dev/__init__ declares a literal __version__", init_version is not None)
 check(
-    "version/pyproject matches laya.__version__",
+    "version/pyproject matches dev.__version__",
     static_version.group(1) if static_version else None,
     init_version.group(1) if init_version else None,
 )
-for label, match in (("pyproject", static_version), ("laya/__init__", init_version)):
+for label, match in (("pyproject", static_version), ("dev/__init__", init_version)):
     value = match.group(1) if match else ""
     parts = value.split(".")
     check_true("%s/version is X.Y.Z" % label, len(parts) == 3 and all(p.isdigit() for p in parts), "got %r" % value)
@@ -155,16 +155,16 @@ base = read("compose.yaml")
 cuda = read("compose.cuda.yaml")
 dockerfile = read("Dockerfile")
 
-check_true("compose.http/declares laya-serve", "laya-serve:" in http, http[:200])
+check_true("compose.http/declares dev-serve", "dev-serve:" in http, http[:200])
 check_true("compose.http/runs the server command",
-           'command: ["laya-serve"]' in http, "laya-serve is not the container command")
+           'command: ["dev-serve"]' in http, "dev-serve is not the container command")
 check_true("compose.http/publishes a port", re.search(r"^\s*ports:", http, re.M) is not None)
 # Host and container port must come from the same variable, or they drift apart and the
 # published port stops reaching the server.
-port_map = re.search(r'-\s*"(?:\$\{LAYA_BIND_ADDRESS:-[^}]+\}:)?(\$\{[A-Z_]+:-(\d+)\}):(\$\{[A-Z_]+:-(\d+)\})"', http)
-# The API is unauthenticated until LAYA_API_KEY is set, so exposure beyond the host is opt-in.
-check_true("compose.http/publishes on loopback unless LAYA_BIND_ADDRESS is set",
-           '"${LAYA_BIND_ADDRESS:-127.0.0.1}:' in http)
+port_map = re.search(r'-\s*"(?:\$\{DEV_BIND_ADDRESS:-[^}]+\}:)?(\$\{[A-Z_]+:-(\d+)\}):(\$\{[A-Z_]+:-(\d+)\})"', http)
+# The API is unauthenticated until DEV_API_KEY is set, so exposure beyond the host is opt-in.
+check_true("compose.http/publishes on loopback unless DEV_BIND_ADDRESS is set",
+           '"${DEV_BIND_ADDRESS:-127.0.0.1}:' in http)
 check_true("compose.http/has a healthcheck on /health",
            "healthcheck:" in http and "/health" in http)
 check_true("compose.http/port mapping is present", port_map is not None, http[:300])
@@ -172,25 +172,25 @@ if port_map:
     check("compose.http/host port equals container port", port_map.group(2), port_map.group(4))
     check("compose.http/both sides use the same variable", port_map.group(1), port_map.group(3))
 check_true("compose.http/the server reads the same variable",
-           'LAYA_PORT: "${LAYA_PORT:-8000}"' in http)
+           'DEV_PORT: "${DEV_PORT:-8000}"' in http)
 check_true("compose.http/shares the model cache",
-           "model-cache:/home/laya/.cache/huggingface" in http)
-# The base service is what `docker compose run --rm laya` uses; publishing it a port or
+           "model-cache:/home/dev/.cache/huggingface" in http)
+# The base service is what `docker compose run --rm dev` uses; publishing it a port or
 # changing its command would be a breaking change to the quickstart.
 check_true("compose.http/leaves the quickstart service alone",
-           "laya:" not in http, "compose.http.yaml overrides the base `laya` service")
+           "dev:" not in http, "compose.http.yaml overrides the base `dev` service")
 
-# `pip install .` alone puts no `laya-serve` in the image, so the extra is load-bearing.
+# `pip install .` alone puts no `dev-serve` in the image, so the extra is load-bearing.
 check_true("Dockerfile/installs the serve extra", '".[serve]"' in dockerfile, dockerfile[:400])
 check_true("Dockerfile/still runs pip check", "pip check" in dockerfile)
 
-# Overrides for `laya` never reach `laya-serve`, a separate service. If the CUDA override does
-# not repeat the args for laya-serve, that service silently serves on CPU.
-check_true("compose.cuda/covers laya-serve too",
-           re.search(r"^\s{2}laya-serve:", cuda, re.M) is not None,
-           "compose.cuda.yaml does not mention laya-serve, so GPU serving would be CPU")
+# Overrides for `dev` never reach `dev-serve`, a separate service. If the CUDA override does
+# not repeat the args for dev-serve, that service silently serves on CPU.
+check_true("compose.cuda/covers dev-serve too",
+           re.search(r"^\s{2}dev-serve:", cuda, re.M) is not None,
+           "compose.cuda.yaml does not mention dev-serve, so GPU serving would be CPU")
 check("compose.cuda/repeats the torch index for the base service",
-      len(re.findall(r'TORCH_INDEX: "\$\{LAYA_TORCH_INDEX:-cu128\}"', cuda)), 2)
+      len(re.findall(r'TORCH_INDEX: "\$\{DEV_TORCH_INDEX:-cu128\}"', cuda)), 2)
 check("compose.cuda/repeats the device reservation for both services",
       len(re.findall(r"driver: nvidia", cuda)), 2)
 check_true("compose.cuda/no stale reference to a missing file",

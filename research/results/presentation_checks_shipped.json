@@ -18,7 +18,7 @@
    "identical_texts": ["moderate", "a request"],
    "identical_ks": [3, 4, 5],
    "levels": ["Not urgent", "Soon", "Work is blocked"],
-   "laya_version": "0.3.7"
+   "dev_version": "0.3.7"
   },
   "parity_max_abs_diff": 4.9224502247733476e-05,
   "checks": {
@@ -73,7 +73,7 @@
    "identical_texts": ["moderate", "a request"],
    "identical_ks": [3, 4, 5],
    "levels": ["Not urgent", "Soon", "Work is blocked"],
-   "laya_version": "0.3.7"
+   "dev_version": "0.3.7"
   },
   "parity_max_abs_diff": 4.97927037618473e-05,
   "checks": {

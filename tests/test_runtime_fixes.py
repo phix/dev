@@ -15,8 +15,8 @@ import torch.nn as nn
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from laya.agent import MPS_AMP_MIN_ROWS_DEFAULT, Agent, _amp_context, _mps_amp_min_rows  # noqa: E402
-from laya.common import DecisionModel, build_sequence, serialize_state  # noqa: E402
+from dev.agent import MPS_AMP_MIN_ROWS_DEFAULT, Agent, _amp_context, _mps_amp_min_rows  # noqa: E402
+from dev.common import DecisionModel, build_sequence, serialize_state  # noqa: E402
 
 PASS, FAIL = [], []
 
@@ -203,11 +203,11 @@ check("mps-gate/amp disabled stays off", _mps_agent(amp=False)._amp_enabled_for(
 cpu = _bare_agent(FakeModel(), dtype=torch.bfloat16, amp=True)
 check("cpu-gate/not gated by rows", cpu._amp_enabled_for(1), True)
 
-os.environ["LAYA_MPS_AMP_MIN_ROWS"] = "2"
+os.environ["DEV_MPS_AMP_MIN_ROWS"] = "2"
 check("mps-gate/env override", _mps_amp_min_rows(), 2)
-os.environ["LAYA_MPS_AMP_MIN_ROWS"] = "nonsense"
+os.environ["DEV_MPS_AMP_MIN_ROWS"] = "nonsense"
 check("mps-gate/env invalid falls back", _mps_amp_min_rows(), MPS_AMP_MIN_ROWS_DEFAULT)
-del os.environ["LAYA_MPS_AMP_MIN_ROWS"]
+del os.environ["DEV_MPS_AMP_MIN_ROWS"]
 check("mps-gate/env default", _mps_amp_min_rows(), MPS_AMP_MIN_ROWS_DEFAULT)
 
 

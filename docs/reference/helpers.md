@@ -2,52 +2,52 @@
 
 ## Language detection
 
-`laya.detect_language` is `laya.lang.analyse`.
+`dev.detect_language` is `dev.lang.analyse`.
 
-::: laya.lang.analyse
+::: dev.lang.analyse
 
-::: laya.lang.detect_script
+::: dev.lang.detect_script
 
-::: laya.lang.is_english
+::: dev.lang.is_english
 
 ## Email
 
-::: laya.email.clean_email_body
+::: dev.email.clean_email_body
 
-::: laya.email.email_state
+::: dev.email.email_state
 
 ## Question presets
 
-::: laya.presets.triage_questions
+::: dev.presets.triage_questions
 
-::: laya.presets.email_questions
+::: dev.presets.email_questions
 
-::: laya.presets.guard_questions
+::: dev.presets.guard_questions
 
-::: laya.presets.moderation_questions
+::: dev.presets.moderation_questions
 
-::: laya.presets.router_questions
+::: dev.presets.router_questions
 
 ## Shortlisting
 
-::: laya.shortlist.shortlist_choice
+::: dev.shortlist.shortlist_choice
 
-::: laya.shortlist.predict_shortlist
+::: dev.shortlist.predict_shortlist
 
-::: laya.shortlist.embed_fn_from_agent
+::: dev.shortlist.embed_fn_from_agent
 
 ## Calibration and training
 
-::: laya.common.confidence_from_probs
+::: dev.common.confidence_from_probs
 
-::: laya.common.ece_score
+::: dev.common.ece_score
 
-::: laya.common.render_options
+::: dev.common.render_options
 
-::: laya.common.proper_reward
+::: dev.common.proper_reward
 
-::: laya.common.td_lambda_targets
+::: dev.common.td_lambda_targets
 
-::: laya.common.QTYPES
+::: dev.common.QTYPES
 
-::: laya.common.QTYPE_NAMES
+::: dev.common.QTYPE_NAMES

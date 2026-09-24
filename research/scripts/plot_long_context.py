@@ -35,7 +35,7 @@ for (r, c), cell in t.get_celld().items():
     cell.set_edgecolor("#d1d5db")
     if r == 0:
         cell.get_text().set_color("white"); cell.get_text().set_weight("bold")
-ax.set_title("laya-multilingual with max_len=8192: 20 support requests in 8 languages,\n"
+ax.set_title("dev-multilingual with max_len=8192: 20 support requests in 8 languages,\n"
              "each placed at the end of a document of unrelated text",
              fontsize=13, weight="bold", pad=12)
 fig.text(0.5, -0.06,

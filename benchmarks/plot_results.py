@@ -29,7 +29,7 @@ def main():
     consist = load("results-consistency-rtx4070.json")
 
     fig, axes = plt.subplots(1, 3, figsize=(15, 4.2))
-    fig.suptitle("predict_batch on RTX 4070 — laya %s" % os.environ.get("LAYA_VER", "0.3.11"),
+    fig.suptitle("predict_batch on RTX 4070 — dev %s" % os.environ.get("DEV_VER", "0.3.11"),
                  fontsize=13, fontweight="bold")
 
     # panel 1: agent-level speedup

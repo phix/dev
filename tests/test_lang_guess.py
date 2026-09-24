@@ -17,7 +17,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from laya.router import Router, _english_from_code  # noqa: E402
+from dev.router import Router, _english_from_code  # noqa: E402
 
 PASS, FAIL = [], []
 

@@ -1,4 +1,4 @@
-"""Run the frozen scenario set with Laya or an explicitly configured Jev API."""
+"""Run the frozen scenario set with Dev or an explicitly configured Jev API."""
 import argparse
 import datetime
 import getpass
@@ -25,10 +25,10 @@ def file_sha(path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--backend', choices=['laya', 'jev'], required=True)
+    parser.add_argument('--backend', choices=['dev', 'jev'], required=True)
     parser.add_argument('--checkpoint', type=Path, help='Local checkpoint; no automatic weight download')
     parser.add_argument('--device', choices=['cpu', 'mps', 'cuda'], default='cpu')
-    parser.add_argument('--model', default=None, help='Jev model ID, or descriptive local Laya model ID')
+    parser.add_argument('--model', default=None, help='Jev model ID, or descriptive local Dev model ID')
     parser.add_argument('--checkpoint-revision', help='Optional user-supplied Hub revision; file hash is always recorded')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--repeats', type=int, default=3)
@@ -72,24 +72,24 @@ def main():
         os.environ.update(HF_HUB_OFFLINE='1', USE_TF='0', USE_TORCH='1', TOKENIZERS_PARALLELISM='false')
         import torch
         import transformers
-        import laya
-        from laya.common import build_sequence, serialize_state, render_options
+        import dev
+        from dev.common import build_sequence, serialize_state, render_options
         torch.set_num_threads(2)
         start = time.perf_counter()
-        agent = laya.load(str(args.checkpoint.resolve()), device=args.device)
+        agent = dev.load(str(args.checkpoint.resolve()), device=args.device)
         load_seconds = time.perf_counter() - start
-        source = Path(laya.__file__).resolve().parent
+        source = Path(dev.__file__).resolve().parent
         try:
             commit = subprocess.check_output(['git', '-C', str(source), 'rev-parse', 'HEAD'], text=True,
                                              stderr=subprocess.DEVNULL).strip()
         except (OSError, subprocess.CalledProcessError):
             commit = None
-        metadata.update(model=args.model or 'laya-local', checkpoint_revision=args.checkpoint_revision,
+        metadata.update(model=args.model or 'dev-local', checkpoint_revision=args.checkpoint_revision,
                         checkpoint_config=agent.cfg, checkpoint_model_sha256=file_sha(args.checkpoint / 'model.safetensors'),
                         load_seconds=load_seconds, torch=torch.__version__,
                         transformers=transformers.__version__, device=str(agent.device), cpu_threads=2,
-                        laya_source_commit=commit,
-                        laya_source_files={name: file_sha(source / name) for name in ['agent.py', 'common.py']})
+                        dev_source_commit=commit,
+                        dev_source_files={name: file_sha(source / name) for name in ['agent.py', 'common.py']})
 
         def call(req):
             if agent.device.type == 'mps':

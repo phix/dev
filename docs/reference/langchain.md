@@ -1,14 +1,14 @@
 # LangChain components
 
-Install with `pip install "laya[langchain]"`. The [LangChain & LangGraph guide](../langchain.md)
+Install with `pip install "dev[langchain]"`. The [LangChain & LangGraph guide](../langchain.md)
 shows these components in chains and graphs.
 
-::: laya.integrations.langchain.LayaRouter
+::: dev.integrations.langchain.DevRouter
 
-::: laya.integrations.langchain.LayaGuardrail
+::: dev.integrations.langchain.DevGuardrail
 
-::: laya.integrations.langchain.LayaGuardrailError
+::: dev.integrations.langchain.DevGuardrailError
 
-::: laya.integrations.langchain.LayaTriage
+::: dev.integrations.langchain.DevTriage
 
-::: laya.integrations.langchain.LayaEvaluator
+::: dev.integrations.langchain.DevEvaluator

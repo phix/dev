@@ -8,7 +8,7 @@ the end hooks.
 import hashlib
 import json
 
-import laya
+import dev
 
 CACHE = {}
 
@@ -29,7 +29,7 @@ def cache_write(ctx):
         CACHE[cache_key(ctx.states[0], ctx.questions)] = ctx.results[0]
 
 
-agent = laya.load("convaiinnovations/laya",
+agent = dev.load("convaiinnovations/laya",
                   on_predict_start=cache_read, on_predict_end=cache_write)
 
 STATE = "I was charged twice for the same invoice."

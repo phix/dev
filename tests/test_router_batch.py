@@ -6,7 +6,7 @@ from time import sleep
 
 import pytest
 
-from laya.router import Router
+from dev.router import Router
 
 
 Q = {"intent": {"type": "noul", "instructions": "Relevant?"}}
@@ -18,7 +18,7 @@ def request(state, **overrides):
 
 @pytest.fixture
 def fake_agent(monkeypatch):
-    import laya.agent
+    import dev.agent
 
     built = []
     calls = []
@@ -33,14 +33,14 @@ def fake_agent(monkeypatch):
             if "raise" in states:
                 raise RuntimeError("inference failed")
             return [
-                {"model": "laya-rl-agent", "answers": {"seen": state}, "usage": {}}
+                {"model": "dev-rl-agent", "answers": {"seen": state}, "usage": {}}
                 for state in states
             ]
 
         def system_one(self, state, questions):
             return self.predict_batch([state], questions)[0]
 
-    monkeypatch.setattr(laya.agent, "Agent", Agent)
+    monkeypatch.setattr(dev.agent, "Agent", Agent)
     return built, calls
 
 
@@ -180,7 +180,7 @@ def test_route_batch_forwards_lang_guess(fake_agent):
     assert built == []
 
 def test_concurrent_batch_load_deduplicates(monkeypatch):
-    import laya.agent
+    import dev.agent
 
     built = []
     guard = Lock()
@@ -200,7 +200,7 @@ def test_concurrent_batch_load_deduplicates(monkeypatch):
         def system_one(self, state, questions):
             return self.predict_batch([state], questions)[0]
 
-    monkeypatch.setattr(laya.agent, "Agent", SlowAgent)
+    monkeypatch.setattr(dev.agent, "Agent", SlowAgent)
     router = Router(max_loaded=2)
     start = Barrier(8)
 

@@ -6,7 +6,7 @@ Run from the repository root:
 """
 import json
 
-import laya
+import dev
 
 
 def on_predict_end(ctx):
@@ -33,11 +33,11 @@ QUESTIONS = {
 
 
 # Direct Agent use.
-agent = laya.load("convaiinnovations/laya", on_predict_end=on_predict_end)
+agent = dev.load("convaiinnovations/laya", on_predict_end=on_predict_end)
 agent.system_one("I was charged twice for the same invoice.", QUESTIONS)
 
 # Router use: the hook also sees ctx.decision (which checkpoint was chosen).
-from laya import Router  # noqa: E402
+from dev import Router  # noqa: E402
 
 router = Router(on_predict_end=on_predict_end)
 router.predict("I was charged twice for the same invoice.", QUESTIONS)

@@ -26,7 +26,7 @@ the shipped `choice` confidence really is `confidence_from_probs`, and the shipp
 confidence really is `max(p)` -- so `answer_confidence` is a no-op on every `noul` answer here.
 
 Caveat worth stating up front: the only per-question probabilities checked into this repository
-are this benchmark's, and Laya scores near chance on it (4 options, accuracy around 0.31). Every
+are this benchmark's, and Dev scores near chance on it (4 options, accuracy around 0.31). Every
 calibration number below inherits that. The comparison between the two definitions is still
 meaningful -- both are computed on the same predictions -- but neither is a calibration figure
 for the checkpoint in general.
@@ -41,7 +41,7 @@ import numpy as np
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, REPO)
 
-from laya.common import answer_confidence, confidence_from_probs, ece_score  # noqa: E402
+from dev.common import answer_confidence, confidence_from_probs, ece_score  # noqa: E402
 
 RESULTS = os.path.join(REPO, "research", "benchmarks", "feishu_zh", "results", "v1")
 OUT = os.path.join(REPO, "research", "results", "confidence_definitions.json")
@@ -58,8 +58,8 @@ def load(model):
 
 
 def is_laya(rows):
-    """The invariants below describe Laya's own answer shape, so they are only checked there."""
-    return any(str((r.get("response") or {}).get("model", "")).startswith("laya") for r in rows)
+    """The invariants below describe Dev's own answer shape, so they are only checked there."""
+    return any(str((r.get("response") or {}).get("model", "")).startswith("dev") for r in rows)
 
 
 def choice_rows(rows):
@@ -158,7 +158,7 @@ def measure(rows):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--write", action="store_true", help="also write %s" % os.path.relpath(OUT, REPO))
-    ap.add_argument("--models", nargs="+", default=["laya", "jev"])
+    ap.add_argument("--models", nargs="+", default=["dev", "jev"])
     args = ap.parse_args()
 
     report = {"source": os.path.relpath(RESULTS, REPO), "bins": BINS, "models": {}}
@@ -229,10 +229,10 @@ def main():
             print("   %-12s n=%-4d confidence=%.4f accuracy=%.4f gap=%+.4f"
                   % (b["bin"], b["n"], b["mean_confidence"], b["accuracy"], b["gap"]))
 
-    print("Invariants (Laya answers only; another engine's `confidence` is its own definition):")
+    print("Invariants (Dev answers only; another engine's `confidence` is its own definition):")
     for model, m in report["models"].items():
         if not m.get("invariants_checked"):
-            print("   %-6s skipped, not a Laya response shape" % model)
+            print("   %-6s skipped, not a Dev response shape" % model)
             continue
         print("   %-6s shipped choice confidence is 1 - H/log(k)   : %-5s (max drift %.2g over %d)"
               % (model, m["shipped_choice_confidence_is_entropy"],

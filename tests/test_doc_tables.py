@@ -3,7 +3,7 @@
 `BENCHMARKS.md:274` promises the fast-path comparison "can be re-checked without a GPU"
 because every per-option probability is in `benchmarks/results/parity_*.json`. Two cells
 did not match it, and the sentence under the table claimed the fast path is never further
-from fp32 than the stock path is, which the `laya-multilingual` `noul` row contradicts.
+from fp32 than the stock path is, which the `dev-multilingual` `noul` row contradicts.
 
 Re-measuring would not have caught either: the run is not stale, the transcription is. So
 this reads the published table and the committed JSON and compares them, which is
@@ -64,8 +64,8 @@ PARITY_DIR = os.path.join("benchmarks", "results")
 
 # checkpoint -> the file its row cites, and the row's own name for the model
 SOURCES = {
-    "laya": "parity_english_rtx4070.json",
-    "laya-multilingual": "parity_multilingual_rtx4070.json",
+    "dev": "parity_english_rtx4070.json",
+    "dev-multilingual": "parity_multilingual_rtx4070.json",
 }
 
 HEADER = ("| checkpoint | type | n | max \\|p_fast - p_stock\\| | max \\|p_fast - p_fp32\\| "
@@ -152,7 +152,7 @@ def main() -> int:
     contradicted = [(c, q) for c, s in summaries.items() for q, v in s.items()
                     if isinstance(v, dict) and v["d_fast_fp32"] > v["d_stock_fp32"]]
     check("the row that falsified the old sentence is still the multilingual noul one",
-          contradicted, [("laya-multilingual", "noul")])
+          contradicted, [("dev-multilingual", "noul")])
 
     # ------------------------------------------------- what this cannot check
     unbacked = [

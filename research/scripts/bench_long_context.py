@@ -1,4 +1,4 @@
-"""Long-document accuracy and latency on laya-multilingual at the default limit and at 8,192 tokens.
+"""Long-document accuracy and latency on dev-multilingual at the default limit and at 8,192 tokens.
 
 Each case is a support request placed at the END of a document padded with unrelated meeting
 notes, so the request sits after `pad` tokens of other text. That is the case a 1,024-token limit
@@ -14,7 +14,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import torch
 import transformers
-import laya
+import dev
 
 QUESTIONS = {"department": {"type": "choice", "instructions": "Which department should handle this request?",
                             "criteria": {"billing": "invoices, payments, refunds",
@@ -57,7 +57,7 @@ def main():
     ap.add_argument("--out", default="research/results/long_context_multilingual.json")
     a = ap.parse_args()
 
-    agent = laya.load("convaiinnovations/laya", subfolder="multilingual", device=a.device)
+    agent = dev.load("convaiinnovations/laya", subfolder="multilingual", device=a.device)
     per_rep = len(agent.tok(FILLER, add_special_tokens=False)["input_ids"])
     default_limit = int(agent.cfg.get("max_len", 1024))
     rows, cases = [], []
@@ -87,7 +87,7 @@ def main():
                   % (pad, limit, correct, len(REQUESTS), row["median_latency_s"], row["median_input_tokens"]), flush=True)
     out = {"checkpoint": "convaiinnovations/laya (multilingual/)", "default_limit": default_limit,
            "device": a.device, "platform": platform.platform(), "torch": torch.__version__,
-           "transformers": transformers.__version__, "laya": laya.__version__,
+           "transformers": transformers.__version__, "dev": dev.__version__,
            "questions": QUESTIONS, "rows": rows, "cases": cases}
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(out, ensure_ascii=False, indent=1))

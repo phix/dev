@@ -5,12 +5,12 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from laya.agent import Agent
+from dev.agent import Agent
 
 # Skip the test if onnx isn't installed
 try:
     import onnxruntime
-    from laya.onnx_agent import ONNXAgent
+    from dev.onnx_agent import ONNXAgent
     from scripts.export_onnx import export_to_onnx
     HAS_ONNX = True
 except ImportError:
@@ -24,7 +24,7 @@ def test_onnx_numerical_parity():
     model_id = "convaiinnovations/laya"
     
     with tempfile.TemporaryDirectory() as tmpdir:
-        onnx_path = os.path.join(tmpdir, "laya.onnx")
+        onnx_path = os.path.join(tmpdir, "dev.onnx")
         
         # 1. Export to ONNX
         export_to_onnx(model_id, onnx_path)

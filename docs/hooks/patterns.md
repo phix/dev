@@ -51,7 +51,7 @@ def audit(ctx):
     }, sys.stdout)
     sys.stdout.write("\n")
 
-laya.load("convaiinnovations/laya", on_predict_end=audit)
+dev.load("convaiinnovations/laya", on_predict_end=audit)
 ```
 
 Make it lenient if losing a log line must not fail a request: `hooks_raise=False`. Make it
@@ -72,7 +72,7 @@ def redact(ctx):
         for s in ctx.states
     ]
 
-laya.load("convaiinnovations/laya", on_predict_start=redact)
+dev.load("convaiinnovations/laya", on_predict_start=redact)
 ```
 
 A redaction hook is a policy hook: keep `hooks_raise=True`, because a silently broken redactor
@@ -100,7 +100,7 @@ def write(ctx):
     if ctx.results:
         CACHE[key(ctx.states[0], ctx.questions)] = ctx.results[0]
 
-laya.load("convaiinnovations/laya", on_predict_start=read, on_predict_end=write)
+dev.load("convaiinnovations/laya", on_predict_start=read, on_predict_end=write)
 ```
 
 Guard the cache with a lock when serving concurrently. On the Router the cached payload still
@@ -118,7 +118,7 @@ def metrics(ctx):
     if ctx.elapsed_ms is not None:
         LATENCIES.append(ctx.elapsed_ms)
 
-laya.load("convaiinnovations/laya", on_predict_end=metrics, hooks_raise=False)
+dev.load("convaiinnovations/laya", on_predict_end=metrics, hooks_raise=False)
 ```
 
 ### Guardrails
@@ -134,7 +134,7 @@ def guard(ctx):
     if "ssn" in str(ctx.states[0]).lower():
         raise Blocked("possible PII in state")
 
-laya.load("convaiinnovations/laya", on_predict_start=guard)
+dev.load("convaiinnovations/laya", on_predict_start=guard)
 ```
 
 ### Confidence gating
@@ -149,7 +149,7 @@ def gate(ctx):
         answer["choice"] = "human-review"
         answer["gated"] = True
 
-laya.load("convaiinnovations/laya", on_predict_end=gate)
+dev.load("convaiinnovations/laya", on_predict_end=gate)
 ```
 
 ### Routing override
@@ -157,7 +157,7 @@ laya.load("convaiinnovations/laya", on_predict_end=gate)
 `on_route` may replace `ctx.decision` to pin a checkpoint for a class of traffic.
 
 ```python
-from laya.router import RouteDecision
+from dev.router import RouteDecision
 
 def pin(ctx):
     if "refund" in str(ctx.states[0]).lower():
@@ -199,7 +199,7 @@ def make_audit(tenant):
         ship(tenant, ctx.run_id, ctx.results)
     return audit
 
-agent = laya.load("convaiinnovations/laya", on_predict_end=make_audit("acme"))
+agent = dev.load("convaiinnovations/laya", on_predict_end=make_audit("acme"))
 ```
 
 ### Composition
@@ -207,7 +207,7 @@ agent = laya.load("convaiinnovations/laya", on_predict_end=make_audit("acme"))
 Several hooks of different kinds compose naturally; installed hooks run first, in order.
 
 ```python
-agent = laya.load(
+agent = dev.load(
     "convaiinnovations/laya",
     hooks=[Metrics(), Guardrail()],     # metrics first, then policy
     on_predict_start=redact,            # convenience callables appended after hooks
@@ -237,7 +237,7 @@ A tracer or metrics hook that every decision should see can be registered once, 
 passed to each `Agent` and `Router`. Defaults run before the instance and per-call hooks.
 
 ```python
-from laya import BaseHook, hooks
+from dev import BaseHook, hooks
 
 class Metrics(BaseHook):
     def on_predict_end(self, ctx):
@@ -261,7 +261,7 @@ def widen_for_high_cardinality(ctx):
     if k >= 50:
         ctx.head_max_len = max(ctx.head_max_len or 192, 16 + 4 * k)
 
-agent = laya.load("convaiinnovations/laya", on_predict_start=widen_for_high_cardinality)
+agent = dev.load("convaiinnovations/laya", on_predict_start=widen_for_high_cardinality)
 ```
 
 The same knobs are available per call: `agent.system_one(state, questions, head_max_len=324)`.
@@ -270,7 +270,7 @@ The same knobs are available per call: `agent.system_one(state, questions, head_
 
 ### Blocking work
 
-Hooks run on the calling thread, and `laya.serve` uses a single inference worker. A hook that
+Hooks run on the calling thread, and `dev.serve` uses a single inference worker. A hook that
 sleeps, waits on a network round-trip, or calls `input()` stalls every other request behind it.
 
 ```python
@@ -284,7 +284,7 @@ def audit(ctx):
 ```
 
 If you must do slow work, set `hooks_concurrent=False` to at least keep the hook itself from
-overlapping, and run `laya.serve` behind a queue.
+overlapping, and run `dev.serve` behind a queue.
 
 ### Raising from end hooks for control flow
 
@@ -387,10 +387,10 @@ rejected. Use `on_predict_start=` / `on_predict_end=`.
 
 ```python
 # bad: TypeError
-laya.load("convaiinnovations/laya", hooks=[lambda ctx: None])
+dev.load("convaiinnovations/laya", hooks=[lambda ctx: None])
 
 # good
-laya.load("convaiinnovations/laya", on_predict_end=lambda ctx: None)
+dev.load("convaiinnovations/laya", on_predict_end=lambda ctx: None)
 ```
 
 ### Assuming results exist in end hooks

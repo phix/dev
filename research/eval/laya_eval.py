@@ -1,10 +1,10 @@
-"""laya-eval: an independent, reproducible evaluation harness for Laya checkpoints.
+"""dev-eval: an independent, reproducible evaluation harness for Dev checkpoints.
 
 Why this exists
 ---------------
 The repository's own benchmark scripts are research code: they load everything,
 run all parts, and print tables. There is no small, reproducible harness a third
-party can point at a Laya checkpoint to get a per-language accuracy and ECE
+party can point at a Dev checkpoint to get a per-language accuracy and ECE
 report plus machine-readable per-case output. This is that harness.
 
 Provenance
@@ -25,9 +25,9 @@ pre-clamp temperatures, ``en`` reproduces n=100 / accuracy 0.82 / macro_f1 0.787
 
 Usage
 -----
-    python -m laya_eval --model convaiinnovations/laya --langs en,de,ro
-    python -m laya_eval --model ./local-checkpoint --langs all --out report.json
-    python -m laya_eval --model convaiinnovations/laya --subfolder multilingual --langs all
+    python -m dev_eval --model convaiinnovations/laya --langs en,de,ro
+    python -m dev_eval --model ./local-checkpoint --langs all --out report.json
+    python -m dev_eval --model convaiinnovations/laya --subfolder multilingual --langs all
 
 Output is a JSON document with a ``config`` block, a per-language ``report`` and
 a ``cases`` list carrying every individual decision, so a number in the report can
@@ -44,8 +44,8 @@ import time
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 # Running this file directly puts research/eval/ on sys.path, not the repo root, so
-# `import laya` would fail. Allow both `python research/eval/laya_eval.py` and
-# `python -m research.eval.laya_eval` to find the package.
+# `import dev` would fail. Allow both `python research/eval/dev_eval.py` and
+# `python -m research.eval.dev_eval` to find the package.
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
@@ -125,7 +125,7 @@ def score_cases(agent, cases) -> List[Any]:
     here so the caller can score under more than one regime from one pass.
     """
     import torch
-    from laya.common import QTYPES, build_sequence, collate_items, render_options
+    from dev.common import QTYPES, build_sequence, collate_items, render_options
 
     max_len = agent.cfg.get("max_len", 512)
     head_max_len = agent.cfg.get("head_max_len", 192)
@@ -166,7 +166,7 @@ def temperature_for(agent, qtype: int, k: int, unclamped: bool = False) -> float
     to ``[TEMP_MIN, TEMP_MAX]``. With ``unclamped=True`` it is the checkpoint's raw
     value, which is what the committed pre-#42 sweep was produced with.
     """
-    from laya.common import temp_bucket
+    from dev.common import temp_bucket
     bucket = temp_bucket(qtype, k)
     if unclamped:
         return float(agent.temperature_by_options_raw.get(
@@ -178,7 +178,7 @@ def ece(confidence, correct, bins: int = ECE_BINS) -> float:
     """Expected calibration error over equal-width confidence bins.
 
     The first bin is closed at the bottom (`>= lo`), so `confidence == 0.0` is counted.
-    That is the boundary #39 settled in `laya.common.ece_score`,
+    That is the boundary #39 settled in `dev.common.ece_score`,
     `research/scripts/bench_local.py` and `research/scripts/build_benchmark_nb.py`. This
     harness kept the pre-#39 test until the divergence was found, which made it the only
     one of the four implementations that binned differently.
@@ -233,7 +233,7 @@ def run_language(agent, lang: str, per_lang: int, n_opts: int, seed: int = SEED,
                  unclamped: bool = False) -> Dict[str, Any]:
     """Evaluate one language and return its report plus per-case records."""
     import numpy as np
-    from laya.common import QTYPES
+    from dev.common import QTYPES
 
     rows = load_language(lang)
     cases, gold, option_keys = build_suite(
@@ -275,8 +275,8 @@ def run_language(agent, lang: str, per_lang: int, n_opts: int, seed: int = SEED,
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
-        prog="laya-eval",
-        description="Per-language accuracy and calibration report for a Laya checkpoint.")
+        prog="dev-eval",
+        description="Per-language accuracy and calibration report for a Dev checkpoint.")
     parser.add_argument("--model", default="convaiinnovations/laya",
                         help="checkpoint repo id or local path")
     parser.add_argument("--subfolder", default=None,
@@ -308,10 +308,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print("no languages selected", file=sys.stderr)
         return 2
 
-    import laya
+    import dev
 
     started = time.time()
-    agent = laya.load(args.model, device=args.device, subfolder=args.subfolder)
+    agent = dev.load(args.model, device=args.device, subfolder=args.subfolder)
     agent.model.eval()
     payload: Dict[str, Any] = {
         "config": {
@@ -328,7 +328,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             "instructions": INSTRUCTIONS,
             "temperatures": dict(agent.temperature_by_options_raw) if args.unclamped
             else dict(agent.temperature_by_options),
-            "laya_version": getattr(laya, "__version__", "unknown"),
+            "dev_version": getattr(dev, "__version__", "unknown"),
         },
         "report": {},
         "cases": [],

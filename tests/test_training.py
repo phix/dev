@@ -1,4 +1,4 @@
-"""Training-side helpers: the scoring rules Laya is trained against, and the metrics around them.
+"""Training-side helpers: the scoring rules Dev is trained against, and the metrics around them.
 
 `proper_reward` is the reward the model is optimised for, so its *properness* is a correctness
 property, not a detail: if the reward were maximised by something other than the true
@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np  # noqa: E402
 import torch  # noqa: E402
 
-from laya.common import (  # noqa: E402
+from dev.common import (  # noqa: E402
     QTYPES,
     QTYPE_NAMES,
     amp_dtype,

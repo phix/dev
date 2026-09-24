@@ -2,7 +2,7 @@
 
 The Agent path uses the same weight-free fake as `test_batch.py` (the real `predict_batch`
 with `_encode_state` / `_forward` / `_decode_answers` stubbed). The Router path patches
-`laya.agent.Agent` so a model build never touches the Hub.
+`dev.agent.Agent` so a model build never touches the Hub.
 
 Run: python tests/test_hooks.py
 """
@@ -16,10 +16,10 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import laya.agent as _agent_mod  # noqa: E402
-from laya.agent import Agent  # noqa: E402
-from laya.hooks import normalise_hooks  # noqa: E402
-from laya.router import RouteDecision, Router  # noqa: E402
+import dev.agent as _agent_mod  # noqa: E402
+from dev.agent import Agent  # noqa: E402
+from dev.hooks import normalise_hooks  # noqa: E402
+from dev.router import RouteDecision, Router  # noqa: E402
 
 PASS, FAIL = [], []
 
@@ -315,7 +315,7 @@ f = make_fake()
 f.predict_batch(["s0"], {}, on_predict_end=lambda c: empty.append(c.results))
 check("empty questions/end sees empty results",
       empty[0],
-      [{"model": "laya-rl-agent", "answers": {}, "usage": {"input_tokens": 0, "output_tokens": 0}}])
+      [{"model": "dev-rl-agent", "answers": {}, "usage": {"input_tokens": 0, "output_tokens": 0}}])
 
 
 # --------------------------------------------------------------- input guards and rescue
@@ -446,7 +446,7 @@ check("budget/default does not pass override kwargs", True, True)
 
 
 # --------------------------------------------------------------- context semantics
-from laya.hooks import PredictContext  # noqa: E402
+from dev.hooks import PredictContext  # noqa: E402
 
 _c1 = PredictContext(states=[], questions={})
 _c2 = PredictContext(states=[], questions={})
@@ -862,7 +862,7 @@ check("concurrency/hooks_concurrent=False serialises", conc.max_active, 1)
 
 
 # --------------------------------------------------------------- ONNXAgent parity
-from laya.onnx_agent import ONNXAgent  # noqa: E402
+from dev.onnx_agent import ONNXAgent  # noqa: E402
 
 o = ONNXAgent.__new__(ONNXAgent)
 o.model_id = "convaiinnovations/laya-onnx"
@@ -891,7 +891,7 @@ check("onnx/skip short-circuits",
 
 
 # --------------------------------------------------------------- BaseHook
-from laya import BaseHook  # noqa: E402
+from dev import BaseHook  # noqa: E402
 
 
 class OnlyEnd(BaseHook):
@@ -916,7 +916,7 @@ check("BaseHook/no-op instance is harmless", f._forward_calls, [2])
 
 
 # --------------------------------------------------------------- process-wide defaults
-from laya import hooks as _hooks  # noqa: E402
+from dev import hooks as _hooks  # noqa: E402
 
 log = []
 _hooks.set_default_hooks(on_predict_end=lambda ctx: log.append("default"))

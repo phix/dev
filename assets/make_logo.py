@@ -1,10 +1,10 @@
-"""Generate the Laya logo: SVG sources plus PNG renders.
+"""Generate the Dev logo: SVG sources plus PNG renders.
 
 The mark is one ring in two states. Half of it is an unbroken stroke; the other half breaks into
 points that shrink and fade, and the smallest point sits next to where the stroke begins again --
 so the eye closes the loop on its own.
 
-`laya` (लय) is Sanskrit for dissolution. The mark reads as that cycle: becoming and dissolving,
+`dev` (लय) is Sanskrit for dissolution. The mark reads as that cycle: becoming and dissolving,
 neither one the end. It carries a second meaning specific to this project -- a continuous stroke
 resolving into discrete points is what the model does, turning unstructured state into a typed
 decision.
@@ -54,7 +54,7 @@ def arc_path():
 def dots(color):
     """Points leaving the stroke and spiralling inward, shrinking toward a single point.
 
-    Inward rather than around: `laya` is absorption, and a ring that dissolves into its own
+    Inward rather than around: `dev` is absorption, and a ring that dissolves into its own
     centre says that where a ring of even dots would just read as a loading spinner. It is also
     what the model does -- a spread of options collapsing to one decision.
     """
@@ -76,8 +76,8 @@ def dots(color):
 def mark_svg(color, use_current=False):
     c = "currentColor" if use_current else color
     return '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d"
-     width="%d" height="%d" role="img" aria-label="Laya">
-  <title>Laya</title>
+     width="%d" height="%d" role="img" aria-label="Dev">
+  <title>Dev</title>
   <desc>An open stroke whose end breaks into points that spiral inward and shrink to a single
   point: becoming, then dissolving into one.</desc>
   <g fill="none" stroke="none">
@@ -98,14 +98,14 @@ def lockup_svg(color, text=INK):
     s = 0.95                                   # mark scale inside the lockup
     tx, ty = 2, (h - SIZE * s) / 2
     return '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d"
-     width="%d" height="%d" role="img" aria-label="Laya">
-  <title>Laya</title>
+     width="%d" height="%d" role="img" aria-label="Dev">
+  <title>Dev</title>
   <g transform="translate(%.2f,%.2f) scale(%.3f)">
     <path d="%s" fill="none" stroke="%s" stroke-width="%.1f" stroke-linecap="round" opacity="0.95"/>
 %s
   </g>
   <text x="70" y="%d" font-family="DejaVu Sans, Helvetica Neue, Helvetica, Arial, sans-serif"
-        font-size="34" font-weight="600" letter-spacing="0.5" fill="%s">laya</text>
+        font-size="34" font-weight="600" letter-spacing="0.5" fill="%s">dev</text>
   <text x="71.5" y="%d" font-family="DejaVu Sans, Helvetica Neue, Helvetica, Arial, sans-serif"
         font-size="10.5" letter-spacing="2.6" fill="%s" opacity="0.62">DECISIONS, NOT TEXT</text>
 </svg>

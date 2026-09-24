@@ -13,7 +13,7 @@ import math
 import random
 from typing import Any, Callable, Sequence
 
-from . import laya_eval as harness
+from . import dev_eval as harness
 
 
 @dataclass
@@ -239,7 +239,7 @@ def _report(records):
 
 def model_scorer(agent, unclamped=False):
     """Reuse the harness's raw logits and per-option-count temperatures."""
-    from laya.common import QTYPES
+    from dev.common import QTYPES
 
     def score(cases):
         return [harness.softmax_t(z, harness.temperature_for(
@@ -302,13 +302,13 @@ def main(argv: Sequence[str] | None = None) -> int:
              else list(dict.fromkeys(x.strip() for x in args.langs.split(",") if x.strip())))
     if not langs:
         parser.error("no languages selected")
-    import laya
+    import dev
 
-    agent = laya.load(args.model, device=args.device, subfolder=args.subfolder)
+    agent = dev.load(args.model, device=args.device, subfolder=args.subfolder)
     agent.model.eval()
     payload: dict[str, Any] = {
         "config": {**vars(args), "dataset": harness.DATASET, "split": "test",
-                   "device": str(agent.device), "laya_version": laya.__version__,
+                   "device": str(agent.device), "dev_version": dev.__version__,
                    "max_len": agent.cfg.get("max_len"),
                    "head_max_len": agent.cfg.get("head_max_len"),
                    "temperature": list(agent.temperature_raw if args.unclamped else agent.temperature),

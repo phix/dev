@@ -10,7 +10,7 @@ import pytest
 fastapi = pytest.importorskip("fastapi")
 from fastapi.testclient import TestClient  # noqa: E402
 
-from laya.serve import (  # noqa: E402
+from dev.serve import (  # noqa: E402
     MAX_BODY_BYTES,
     _apply_thread_limit,
     _env_bool,
@@ -30,7 +30,7 @@ class FakeRouter:
     def predict(self, state, questions, model=None):
         self.calls.append({"state": state, "questions": questions, "model": model})
         return {
-            "model": "laya-rl-agent",
+            "model": "dev-rl-agent",
             "answers": {
                 "dept": {"type": "choice", "choice": "billing",
                          "probabilities": {"billing": 0.94, "tech": 0.06}, "confidence": 0.94},
@@ -42,15 +42,15 @@ class FakeRouter:
 
 def _client(monkeypatch, api_key=None):
     if api_key is None:
-        monkeypatch.delenv("LAYA_API_KEY", raising=False)
+        monkeypatch.delenv("DEV_API_KEY", raising=False)
     else:
-        monkeypatch.setenv("LAYA_API_KEY", api_key)
+        monkeypatch.setenv("DEV_API_KEY", api_key)
     fake = FakeRouter()
     return TestClient(create_app(router=fake)), fake
 
 
 REQ = {
-    "model": "jev-1",  # a non-Laya model id -> should be ignored, router auto-routes
+    "model": "jev-1",  # a non-Dev model id -> should be ignored, router auto-routes
     "state": {"body": "billed twice, refund please"},
     "questions": {"dept": {"type": "choice", "instructions": "which team?",
                            "criteria": {"billing": None, "tech": None}}},
@@ -218,12 +218,12 @@ def test_helpers():
 
 
 def test_thread_limit(monkeypatch):
-    monkeypatch.delenv("LAYA_THREADS", raising=False)
+    monkeypatch.delenv("DEV_THREADS", raising=False)
     assert _apply_thread_limit() is None  # unset -> no-op, no torch import
     for bad in ("0", "-4", "abc", ""):
-        monkeypatch.setenv("LAYA_THREADS", bad)
+        monkeypatch.setenv("DEV_THREADS", bad)
         assert _apply_thread_limit() is None
-    monkeypatch.setenv("LAYA_THREADS", "8")
+    monkeypatch.setenv("DEV_THREADS", "8")
     assert _apply_thread_limit() == 8
     import torch
     assert torch.get_num_threads() == 8
@@ -258,7 +258,7 @@ def test_inference_runs_off_the_event_loop(monkeypatch):
 
     import httpx
 
-    monkeypatch.delenv("LAYA_API_KEY", raising=False)
+    monkeypatch.delenv("DEV_API_KEY", raising=False)
     fake = FakeRouter()
     seen = []
     real_predict = fake.predict
@@ -290,7 +290,7 @@ def test_health_stays_available_during_inference(monkeypatch):
 
     import httpx
 
-    monkeypatch.delenv("LAYA_API_KEY", raising=False)
+    monkeypatch.delenv("DEV_API_KEY", raising=False)
     fake = SlowRouter(seconds=0.25)
     app = create_app(router=fake)
     seen = {}

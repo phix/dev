@@ -1,11 +1,11 @@
 # Schema-driven decisions
 
-Turn a JSON schema, or a pydantic model, into Laya questions, and get back typed values with
-calibrated confidence. This is the bridge that makes Laya a structured-output engine: you describe
-the shape you want, Laya answers it in one forward pass.
+Turn a JSON schema, or a pydantic model, into Dev questions, and get back typed values with
+calibrated confidence. This is the bridge that makes Dev a structured-output engine: you describe
+the shape you want, Dev answers it in one forward pass.
 
 ```python
-import laya
+import dev
 
 schema = {
     "type": "object",
@@ -17,12 +17,12 @@ schema = {
     },
 }
 
-agent = laya.load("convaiinnovations/laya")
+agent = dev.load("convaiinnovations/laya")
 values = agent.decide("I was charged twice, refund me.", schema=schema)
 # {"department": "billing", "urgency": 2, "needs_human": True}
 ```
 
-With pydantic (install `laya[structured]`):
+With pydantic (install `dev[structured]`):
 
 ```python
 from typing import Literal
@@ -40,7 +40,7 @@ ticket = agent.decide("I was charged twice, refund me.", schema=Ticket)
 
 The top level must be an object with `properties`. Each property becomes one question.
 
-| JSON schema | Laya question | Returned value |
+| JSON schema | Dev question | Returned value |
 |---|---|---|
 | `enum`, `Literal`, `const` | `choice` | the chosen value, with its original type |
 | `boolean` | `noul` | `true` / `false` |
@@ -54,7 +54,7 @@ level between `minimum` and `maximum`; a boolean is `noul >= 0.5`.
 
 ## Rejections
 
-A schema that cannot be answered from a fixed option set raises `laya.structured.SchemaError`
+A schema that cannot be answered from a fixed option set raises `dev.structured.SchemaError`
 (a `ValueError`) naming the exact path:
 
 | case | message shape |
@@ -72,9 +72,9 @@ Limits: `MAX_PROPERTIES = 32`, `MAX_OPTIONS = 32`, `MAX_SCORE_LEVELS = 10`.
 
 | function | purpose |
 |---|---|
-| `laya.decide(runner, state, schema=..., *, questions=..., return_details=..., **predict_kwargs)` | the free function, works for `Agent` and `Router` |
+| `dev.decide(runner, state, schema=..., *, questions=..., return_details=..., **predict_kwargs)` | the free function, works for `Agent` and `Router` |
 | `agent.decide(state, schema=..., ...)` / `router.decide(state, schema=..., ...)` | convenience methods |
-| `questions_from_json_schema(schema)` | schema to Laya questions |
+| `questions_from_json_schema(schema)` | schema to Dev questions |
 | `questions_from_pydantic(model)` | pydantic model to questions (requires pydantic) |
 | `answers_to_json(answers, schema)` | project raw answers onto schema values |
 | `answer_to_pydantic(model, answers)` | project raw answers into a pydantic instance |

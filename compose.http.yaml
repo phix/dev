@@ -1,66 +1,66 @@
-# Serve Laya over HTTP from the same image, so a Jev client can point its `baseUrl` at it:
+# Serve Dev over HTTP from the same image, so a Jev client can point its `baseUrl` at it:
 #
-#   docker compose -f compose.yaml -f compose.http.yaml up --build laya-serve
+#   docker compose -f compose.yaml -f compose.http.yaml up --build dev-serve
 #   curl -s localhost:8000/health
 #   curl -s localhost:8000/v1/systemone -H 'content-type: application/json' \
 #     --data @examples/docker/request.json
 #
 # For NVIDIA, append -f compose.cuda.yaml before "up":
 #
-#   docker compose -f compose.yaml -f compose.http.yaml -f compose.cuda.yaml up --build laya-serve
+#   docker compose -f compose.yaml -f compose.http.yaml -f compose.cuda.yaml up --build dev-serve
 #
-# This file is additive. `laya` in compose.yaml still runs the one-shot SDK quickstart and
-# still publishes no ports, so `docker compose run --rm laya` behaves exactly as before.
+# This file is additive. `dev` in compose.yaml still runs the one-shot SDK quickstart and
+# still publishes no ports, so `docker compose run --rm dev` behaves exactly as before.
 # Weights share the same named cache volume as that service.
 #
-# Set LAYA_API_KEY (or LAYA_API_KEY_FILE) to require `Authorization: Bearer <key>`.
-# LAYA_PRELOAD=1 builds every checkpoint at startup so the first request does not pay for
+# Set DEV_API_KEY (or DEV_API_KEY_FILE) to require `Authorization: Bearer <key>`.
+# DEV_PRELOAD=1 builds every checkpoint at startup so the first request does not pay for
 # it; the default here is 0 because it makes the container download the whole family on
 # first boot, which is a surprise in a quickstart.
 services:
-  laya-serve:
+  dev-serve:
     build:
       context: .
       args:
-        TORCH_INDEX: "${LAYA_TORCH_INDEX:-cpu}"
-        TORCH_VERSION: "${LAYA_TORCH_VERSION:-2.14.0}"
+        TORCH_INDEX: "${DEV_TORCH_INDEX:-cpu}"
+        TORCH_VERSION: "${DEV_TORCH_VERSION:-2.14.0}"
     # Overrides the image's one-shot quickstart CMD; the ENTRYPOINT that loads *_FILE
     # secrets still runs first.
-    command: ["laya-serve"]
+    command: ["dev-serve"]
     ports:
-      # Host address, host port, container port. The port comes from LAYA_PORT, which
-      # `laya-serve` itself reads, so the two sides cannot drift apart. The host side
-      # stays on loopback unless LAYA_BIND_ADDRESS says otherwise, because the API has
-      # no authentication until LAYA_API_KEY is set.
-      - "${LAYA_BIND_ADDRESS:-127.0.0.1}:${LAYA_PORT:-8000}:${LAYA_PORT:-8000}"
+      # Host address, host port, container port. The port comes from DEV_PORT, which
+      # `dev-serve` itself reads, so the two sides cannot drift apart. The host side
+      # stays on loopback unless DEV_BIND_ADDRESS says otherwise, because the API has
+      # no authentication until DEV_API_KEY is set.
+      - "${DEV_BIND_ADDRESS:-127.0.0.1}:${DEV_PORT:-8000}:${DEV_PORT:-8000}"
     environment:
-      LAYA_HOST: "${LAYA_HOST:-0.0.0.0}"
-      LAYA_PORT: "${LAYA_PORT:-8000}"
-      LAYA_DEVICE: "${LAYA_DEVICE:-cpu}"
-      LAYA_PRELOAD: "${LAYA_PRELOAD:-0}"
-      LAYA_MODELS: "${LAYA_MODELS:-}"
-      LAYA_THREADS: "${LAYA_THREADS:-${OMP_NUM_THREADS:-4}}"
-      LAYA_AUTO_TASK: "${LAYA_AUTO_TASK:-0}"
-      LAYA_LOG_LEVEL: "${LAYA_LOG_LEVEL:-info}"
-      LAYA_API_KEY: "${LAYA_API_KEY:-}"
-      LAYA_API_KEY_FILE: "${LAYA_API_KEY_FILE:-}"
+      DEV_HOST: "${DEV_HOST:-0.0.0.0}"
+      DEV_PORT: "${DEV_PORT:-8000}"
+      DEV_DEVICE: "${DEV_DEVICE:-cpu}"
+      DEV_PRELOAD: "${DEV_PRELOAD:-0}"
+      DEV_MODELS: "${DEV_MODELS:-}"
+      DEV_THREADS: "${DEV_THREADS:-${OMP_NUM_THREADS:-4}}"
+      DEV_AUTO_TASK: "${DEV_AUTO_TASK:-0}"
+      DEV_LOG_LEVEL: "${DEV_LOG_LEVEL:-info}"
+      DEV_API_KEY: "${DEV_API_KEY:-}"
+      DEV_API_KEY_FILE: "${DEV_API_KEY_FILE:-}"
       HF_HUB_OFFLINE: "${HF_HUB_OFFLINE:-0}"
       HF_TOKEN: "${HF_TOKEN:-}"
       HF_TOKEN_FILE: "${HF_TOKEN_FILE:-}"
       OMP_NUM_THREADS: "${OMP_NUM_THREADS:-4}"
     volumes:
-      - model-cache:/home/laya/.cache/huggingface
+      - model-cache:/home/dev/.cache/huggingface
       # Optional token files, readable by UID 10001. Never put a secret value in the
       # environment; these paths are read once at startup and the *_FILE variable is
       # then removed before the server execs.
       # - ${HF_TOKEN_PATH:?Set HF_TOKEN_PATH}:/run/secrets/hf_token:ro
-      # - ${LAYA_API_KEY_PATH:?Set LAYA_API_KEY_PATH}:/run/secrets/laya_api_key:ro
+      # - ${DEV_API_KEY_PATH:?Set DEV_API_KEY_PATH}:/run/secrets/dev_api_key:ro
     init: true
     restart: unless-stopped
     # The server preloads before it binds, so /health answers once the preloaded
     # checkpoints are ready. `up --wait` therefore waits for a usable server.
     healthcheck:
-      test: ["CMD", "python", "-c", "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ['LAYA_PORT'] + '/health', timeout=4)"]
+      test: ["CMD", "python", "-c", "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ['DEV_PORT'] + '/health', timeout=4)"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -69,4 +69,4 @@ services:
 
 volumes:
   model-cache:
-    name: "${LAYA_CACHE_VOLUME:-${COMPOSE_PROJECT_NAME}_model-cache}"
+    name: "${DEV_CACHE_VOLUME:-${COMPOSE_PROJECT_NAME}_model-cache}"

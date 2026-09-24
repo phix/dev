@@ -24,8 +24,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import torch
 import transformers
 
-from laya import Agent
-from laya import agent as agent_module
+from dev import Agent
+from dev import agent as agent_module
 
 QUESTIONS = {
     "team": {"type": "choice", "instructions": "Which team should handle this support ticket?",
@@ -112,7 +112,7 @@ def main():
         p.error("CUDA requested but unavailable")
     ag = Agent(args.model, device=args.device)
     # Execute the actual upstream method, so added default-path overhead is included.
-    source = subprocess.check_output(["git", "show", args.baseline + ":laya/agent.py"], encoding="utf-8")
+    source = subprocess.check_output(["git", "show", args.baseline + ":dev/agent.py"], encoding="utf-8")
     cls = next(n for n in ast.parse(source).body if isinstance(n, ast.ClassDef) and n.name == "Agent")
     method = next(n for n in cls.body if isinstance(n, ast.FunctionDef) and n.name == "predict_batch")
     scope = dict(vars(agent_module))

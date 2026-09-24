@@ -3,10 +3,10 @@ import io
 import json
 from contextlib import redirect_stdout
 
-from laya.cli import show_answers
-from laya.integrations.langchain import _SameOriginRedirectHandler
-from laya.onnx_agent import ONNXAgent
-from laya.serve import MAX_BODY_BYTES, create_app
+from dev.cli import show_answers
+from dev.integrations.langchain import _SameOriginRedirectHandler
+from dev.onnx_agent import ONNXAgent
+from dev.serve import MAX_BODY_BYTES, create_app
 
 
 class FakeRouter:
@@ -54,7 +54,7 @@ def test_serve_lifespan_shuts_down_inference_executor():
 def test_serve_non_ascii_auth_is_401_not_500(monkeypatch):
     from fastapi.testclient import TestClient
 
-    monkeypatch.setenv("LAYA_API_KEY", "s3cret")
+    monkeypatch.setenv("DEV_API_KEY", "s3cret")
     app = create_app(router=FakeRouter())
     client = TestClient(app)
     response = client.post(
@@ -72,14 +72,14 @@ def test_onnx_empty_questions_matches_agent_contract():
     agent = ONNXAgent.__new__(ONNXAgent)
     result = ONNXAgent._infer(agent, "hello", {})
     assert result == {
-        "model": "laya-rl-agent-onnx",
+        "model": "dev-rl-agent-onnx",
         "answers": {},
         "usage": {"input_tokens": 0, "output_tokens": 0},
     }
 
 
 def test_onnx_long_list_state_keeps_newest_turn(monkeypatch):
-    import laya.onnx_agent as module
+    import dev.onnx_agent as module
 
     seen = []
     original = module.build_sequence
@@ -119,8 +119,8 @@ def test_cli_renders_choice_probability_from_probabilities_map():
 def test_default_langchain_router_initialization_is_singleton(monkeypatch):
     import threading
 
-    import laya.integrations.langchain as module
-    import laya.router as router_module
+    import dev.integrations.langchain as module
+    import dev.router as router_module
 
     created = []
     lock = threading.Lock()
@@ -153,12 +153,12 @@ def test_remote_redirect_handler_rejects_cross_origin_credentials():
     import urllib.request
 
     request = urllib.request.Request(
-        "https://laya.example/v1/systemone",
+        "https://dev.example/v1/systemone",
         headers={"Authorization": "Bearer secret"},
     )
     handler = _SameOriginRedirectHandler()
     same_origin = handler.redirect_request(
-        request, None, 302, "Found", {}, "https://laya.example/v1/systemone?retry=1"
+        request, None, 302, "Found", {}, "https://dev.example/v1/systemone?retry=1"
     )
     assert same_origin.get_header("Authorization") == "Bearer secret"
     try:
@@ -176,7 +176,7 @@ def test_fast_path_rejects_sequences_over_its_capacity():
 
     import torch
 
-    from laya.agent import Agent
+    from dev.agent import Agent
 
     agent = Agent.__new__(Agent)
     agent._fast = SimpleNamespace(max_len=16)
@@ -202,7 +202,7 @@ def test_fast_path_rejects_sequences_over_its_capacity():
 def test_fast_top_two_handles_one_option():
     import pytest
     pytest.importorskip("tilelang")
-    from laya.fast import _top_two
+    from dev.fast import _top_two
     import torch
 
     values = _top_two(torch.tensor([[0.75]]))

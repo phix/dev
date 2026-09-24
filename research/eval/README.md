@@ -1,6 +1,6 @@
-# laya-eval — a reproducible per-language evaluation harness
+# dev-eval — a reproducible per-language evaluation harness
 
-An independent harness for measuring a Laya checkpoint: per-language accuracy and
+An independent harness for measuring a Dev checkpoint: per-language accuracy and
 calibration, with machine-readable per-case output.
 
 It exists because the repository's own benchmark scripts are research code. They
@@ -18,34 +18,34 @@ This addresses the ask in
 
 ## Install
 
-Nothing beyond a normal Laya install, plus `datasets`:
+Nothing beyond a normal Dev install, plus `datasets`:
 
 ```bash
-pip install laya datasets
+pip install dev datasets
 ```
 
-The harness is deliberately not part of the `laya` package: it is evaluation code,
-it pulls a dataset, and `import laya` should stay dependency-light.
+The harness is deliberately not part of the `dev` package: it is evaluation code,
+it pulls a dataset, and `import dev` should stay dependency-light.
 
 ## Use
 
 ```bash
 # one language
-python research/eval/laya_eval.py --model convaiinnovations/laya --langs en
+python research/eval/dev_eval.py --model convaiinnovations/laya --langs en
 
 # several, with a JSON report
-python research/eval/laya_eval.py --model convaiinnovations/laya \
+python research/eval/dev_eval.py --model convaiinnovations/laya \
     --langs en,de,ro --out report.json
 
 # every MASSIVE language
-python research/eval/laya_eval.py --model convaiinnovations/laya --langs all --out all.json
+python research/eval/dev_eval.py --model convaiinnovations/laya --langs all --out all.json
 
 # the multilingual checkpoint
-python research/eval/laya_eval.py --model convaiinnovations/laya \
+python research/eval/dev_eval.py --model convaiinnovations/laya \
     --subfolder multilingual --langs all --out multilingual.json
 
 # a local checkpoint
-python research/eval/laya_eval.py --model ./my-finetune --langs en
+python research/eval/dev_eval.py --model ./my-finetune --langs en
 ```
 
 Output, per language:
@@ -60,7 +60,7 @@ and a JSON document with four parts:
 
 | key | contents |
 |---|---|
-| `config` | checkpoint, device, `max_len`, `head_max_len`, dataset, `per_lang`, `n_opts`, seed, the fixed instructions, the temperatures in force, laya version |
+| `config` | checkpoint, device, `max_len`, `head_max_len`, dataset, `per_lang`, `n_opts`, seed, the fixed instructions, the temperatures in force, dev version |
 | `report` | per language: `n`, `accuracy`, `macro_f1`, `ece`, `mean_confidence`, `acc_at_50_coverage`, `temperature` |
 | `summary` | macro accuracy / ECE / macro-F1 over the languages that ran |
 | `cases` | every individual decision |
@@ -153,7 +153,7 @@ Ruled out: the option sets (identical digest to the english run), the weights
   is `472` bytes at `sha256 00e35f88…` at every revision from the sweep's timestamp to
   today; the Hub commits in that window are model-card `docs:`/`assets:` only.
 
-It is in the multilingual inference path between `laya 0.2.0` and `0.3.6` and is
+It is in the multilingual inference path between `dev 0.2.0` and `0.3.6` and is
 **not** reconciled. Flagged rather than hidden.
 
 Related: **`head_max_len` is load-bearing for accuracy**, not just for option
@@ -172,7 +172,7 @@ python research/eval/test_laya_eval.py     # 64 passed, 0 failed
 It pins the upstream constants (seed 13, 20 options, the exact instruction string),
 the determinism of the sampler, that a fresh RNG per language is used, and the
 metric arithmetic, including the `confidence == 0.0` bin boundary that this harness
-shares with `laya.common.ece_score`, `research/scripts/bench_local.py` and
+shares with `dev.common.ece_score`, `research/scripts/bench_local.py` and
 `research/scripts/build_benchmark_nb.py`. That boundary is asserted against all four,
 not just against this harness's own arithmetic.
 
@@ -184,12 +184,12 @@ not just against this harness's own arithmetic.
   100 cases is noisy; raise `--per-lang` and say so when quoting a number.
 * The English checkpoint collapses on non-Latin scripts (see `BENCHMARKS.md`), so a
   low score in one language is not by itself evidence of a misroute — check
-  `laya.lang.analyse` for the script before concluding which checkpoint was used.
+  `dev.lang.analyse` for the script before concluding which checkpoint was used.
 * The `confidence == 0.0` bin boundary is the one
   [#39](https://github.com/NandhaKishorM/laya/pull/39) settled: the first bin is closed
   at the bottom, so `0.0` is counted. This harness used `conf > lo` for every bin until
   the divergence was found, which made it the only one of the four implementations that
-  binned differently. It now matches `laya.common.ece_score`,
+  binned differently. It now matches `dev.common.ece_score`,
   `research/scripts/bench_local.py` and `research/scripts/build_benchmark_nb.py`, and
   `test_laya_eval.py` asserts that agreement.
 
@@ -220,7 +220,7 @@ the calibration question without reopening the accuracy numbers.
 ## Presentation checks (`presentation_checks.py`)
 
 A label-free regression check for the `score` position prior in #131.
-`laya-multilingual` rarely picks the first-listed `score` level, and the fix is a
+`dev-multilingual` rarely picks the first-listed `score` level, and the fix is a
 position-balanced retrain. This script says whether a retrained checkpoint removed
 the prior. Every input is fixed in the file (10 short English states written for it),
 so it needs no dataset and no labels.
@@ -251,18 +251,18 @@ sits in each slot exactly twice per state. A checkpoint whose answer does not de
 on the order picks the first slot in exactly 1/3 of the decisions, whatever the states
 say; the rate moves only through order dependence.
 
-Both read raw marker logits (before temperature) through `laya_eval.score_cases`,
+Both read raw marker logits (before temperature) through `dev_eval.score_cases`,
 and the script first compares that path with `Agent.system_one` on every state.
 
 ### Measured on the shipped checkpoints
 
-CPU, fp32, `convaiinnovations/laya@1c5edc1`, laya 0.3.7. Full output, per state and
+CPU, fp32, `convaiinnovations/laya@1c5edc1`, dev 0.3.7. Full output, per state and
 per configuration: `research/results/presentation_checks_shipped.json`.
 
 | checkpoint | `score_slot0_identical` (leave-one-out) | `score_first_slot_permuted` (leave-one-out) | verdict |
 |---|---|---|---|
-| `laya` (english) | **+0.664** (+0.520 .. +0.741) | **0.217** (0.204 .. 0.241) | PASS |
-| `laya-multilingual` | **−0.492** (−0.563 .. −0.425) | **0.017** (0.000 .. 0.019) | FAIL |
+| `dev` (english) | **+0.664** (+0.520 .. +0.741) | **0.217** (0.204 .. 0.241) | PASS |
+| `dev-multilingual` | **−0.492** (−0.563 .. −0.425) | **0.017** (0.000 .. 0.019) | FAIL |
 
 Parity with `Agent.system_one`: max |Δp| 4.98e-5 (multilingual) and 4.92e-5 (english),
 which is the 4-decimal rounding of `system_one`'s probabilities.
@@ -323,7 +323,7 @@ checks, and an order-invariant model scores exactly 1/3.
 ## Metamorphic option-order robustness (experimental)
 
 `metamorphic.py` adds the initial scope of
-[#244](https://github.com/NandhaKishorM/laya/issues/244): **choice option order robustness**, without changing model/runtime behavior. Label renaming, neutral labels, paraphrases, structured-state permutations, `score` and `noul` perturbations are intentionally deferred. Run from the repository root after installing Laya and `datasets`:
+[#244](https://github.com/NandhaKishorM/laya/issues/244): **choice option order robustness**, without changing model/runtime behavior. Label renaming, neutral labels, paraphrases, structured-state permutations, `score` and `noul` perturbations are intentionally deferred. Run from the repository root after installing Dev and `datasets`:
 
 ```bash
 python -m research.eval.metamorphic --model convaiinnovations/laya \
@@ -342,7 +342,7 @@ Each MASSIVE case uses the existing harness's sampler and produces two inputs:
 
 Instructions and state are otherwise unchanged. Option key/value pairs are moved together during permutation. Every result is mapped back to the original semantic option order **before** predictions and metrics are computed. Exact ties choose the first canonical option. The RNG starts fresh per language; `--seed` controls both sampling and transformations. `--batch-size` bounds the number of forward-pass inputs and does not alter the generated variants. Model inference may still have small floating-point differences across devices and batch sizes.
 
-The JSON contains `config`, per-language `report`, and full `cases`. Each case saves its original input, canonical keys and optional gold index; each variant saves its presented keys, explicit `canonical_to_transformed` and `transformed_to_canonical` label mappings, slot-to-canonical indices, complete **canonical-order** probability vector, prediction, confidence, correctness (or `null`), and comparison to baseline. Probabilities are not rounded. The config records model/subfolder, temperature mode and values, truncation settings, dataset, seed and batch size. For reproducible checkpoint comparisons, use a pinned local snapshot and retain the environment versions alongside the report. `--unclamped` has the same meaning as in `laya_eval`. If any language fails, its error is saved and the command exits nonzero while retaining successful languages.
+The JSON contains `config`, per-language `report`, and full `cases`. Each case saves its original input, canonical keys and optional gold index; each variant saves its presented keys, explicit `canonical_to_transformed` and `transformed_to_canonical` label mappings, slot-to-canonical indices, complete **canonical-order** probability vector, prediction, confidence, correctness (or `null`), and comparison to baseline. Probabilities are not rounded. The config records model/subfolder, temperature mode and values, truncation settings, dataset, seed and batch size. For reproducible checkpoint comparisons, use a pinned local snapshot and retain the environment versions alongside the report. `--unclamped` has the same meaning as in `dev_eval`. If any language fails, its error is saved and the command exits nonzero while retaining successful languages.
 
 Metrics are grouped under `option_order` and `overall`:
 

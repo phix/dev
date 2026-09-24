@@ -23,7 +23,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from laya.common import answer_confidence, confidence_from_probs, ece_score  # noqa: E402
+from dev.common import answer_confidence, confidence_from_probs, ece_score  # noqa: E402
 
 PASS, FAIL = [], []
 
@@ -108,11 +108,11 @@ for probs, k in (([0.1, 0.9], 2), ([0.25] * 4, 4), ([0.7, 0.2, 0.1], 3)):
                close(confidence_from_probs(p, k), float(np.clip(1 - ent / math.log(k), 0.0, 1.0))))
 
 # --------------------------------------------------------------- exported
-import laya  # noqa: E402
+import dev  # noqa: E402
 
-check_true("export/answer_confidence is importable from laya", hasattr(laya, "answer_confidence"))
-check_true("export/answer_confidence is in __all__", "answer_confidence" in laya.__all__)
-check_true("export/answer_confidence is in dir()", "answer_confidence" in dir(laya))
+check_true("export/answer_confidence is importable from dev", hasattr(dev, "answer_confidence"))
+check_true("export/answer_confidence is in __all__", "answer_confidence" in dev.__all__)
+check_true("export/answer_confidence is in dir()", "answer_confidence" in dir(dev))
 
 print("\n%d passed, %d failed" % (len(PASS), len(FAIL)))
 for f in FAIL:

@@ -1,10 +1,10 @@
 # Router
 
-`laya.Router` detects the language of each state and sends the request to the matching
+`dev.Router` detects the language of each state and sends the request to the matching
 checkpoint, loading checkpoints on first use.
 
-::: laya.router.Router
+::: dev.router.Router
 
-::: laya.router.RouteDecision
+::: dev.router.RouteDecision
 
-::: laya.router.DEFAULT_MODELS
+::: dev.router.DEFAULT_MODELS

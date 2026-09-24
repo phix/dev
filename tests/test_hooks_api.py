@@ -13,10 +13,10 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import laya  # noqa: E402
-from laya import Agent, BaseHook, PredictContext, PredictHook, Router, load  # noqa: E402
-from laya.hooks import HOOK_EVENTS, Hook  # noqa: E402
-from laya.onnx_agent import ONNXAgent  # noqa: E402
+import dev  # noqa: E402
+from dev import Agent, BaseHook, PredictContext, PredictHook, Router, load  # noqa: E402
+from dev.hooks import HOOK_EVENTS, Hook  # noqa: E402
+from dev.onnx_agent import ONNXAgent  # noqa: E402
 
 PASS, FAIL = [], []
 
@@ -120,18 +120,18 @@ check_true("PredictHook is callable-typed", callable(PredictHook))
 
 # --------------------------------------------------------------- exports
 for name in ("PredictContext", "PredictHook", "Hook", "BaseHook"):
-    check_true("__all__/%s" % name, name in laya.__all__)
-    check_true("laya.%s exists" % name, hasattr(laya, name))
+    check_true("__all__/%s" % name, name in dev.__all__)
+    check_true("dev.%s exists" % name, hasattr(dev, name))
 
 # BaseHook is the concrete no-op base class; all six events exist and are callable.
 for event in HOOK_EVENTS:
     check_true("BaseHook/%s callable" % event, callable(getattr(BaseHook, event, None)))
 
-# process-wide default registry lives in laya.hooks (not the top level)
+# process-wide default registry lives in dev.hooks (not the top level)
 for helper in ("default_hooks", "set_default_hooks", "add_default_hook", "clear_default_hooks",
                "compose_hooks"):
-    check_true("laya.hooks/%s exists" % helper, callable(getattr(__import__("laya.hooks", fromlist=[helper]), helper, None)))
-check_true("defaults/not exported at top level", not hasattr(laya, "set_default_hooks"))
+    check_true("dev.hooks/%s exists" % helper, callable(getattr(__import__("dev.hooks", fromlist=[helper]), helper, None)))
+check_true("defaults/not exported at top level", not hasattr(dev, "set_default_hooks"))
 
 # --------------------------------------------------------------- class defaults
 for label, cls in (("Agent", Agent), ("Router", Router), ("ONNXAgent", ONNXAgent)):

@@ -37,13 +37,13 @@ session-*.md
 *-session.md
 .claude-session*
 
-# laya-ts: exported weights (regenerate via laya-ts/scripts/export_onnx.py)
+# dev-ts: exported weights (regenerate via dev-ts/scripts/export_onnx.py)
 model-*/
 *.onnx
 *.onnx.data
 
-# laya-ts: build output + deps
-laya-ts/dist/
+# dev-ts: build output + deps
+dev-ts/dist/
 node_modules/
 
 # uv lockfile (repo pins via pip/venv, not uv)

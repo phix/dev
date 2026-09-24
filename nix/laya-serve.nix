@@ -1,4 +1,4 @@
-# NixOS module: run laya-serve (Laya's Jev-compatible /v1/systemone HTTP API)
+# NixOS module: run dev-serve (Dev's Jev-compatible /v1/systemone HTTP API)
 # as a hardened systemd service with CUDA access.
 #
 # The package is built from the host's own `pkgs` via ./package.nix (which pulls
@@ -7,26 +7,26 @@
 # specialArgs and ignore module-level `nixpkgs.overlays`.
 { config, lib, pkgs, ... }:
 let
-  cfg = config.services.laya-serve;
+  cfg = config.services.dev-serve;
 
-  startScript = pkgs.writeShellScript "laya-serve-start" ''
+  startScript = pkgs.writeShellScript "dev-serve-start" ''
     set -eu
     ${lib.optionalString (cfg.apiKeyFile != null) ''
-      export LAYA_API_KEY="$(cat "$CREDENTIALS_DIRECTORY/apikey")"
+      export DEV_API_KEY="$(cat "$CREDENTIALS_DIRECTORY/apikey")"
     ''}
-    exec ${cfg.package}/bin/laya-serve
+    exec ${cfg.package}/bin/dev-serve
   '';
 in
 {
-  options.services.laya-serve = {
-    enable = lib.mkEnableOption "Laya System-1 decision server (TypeSafe Jev-compatible HTTP API)";
+  options.services.dev-serve = {
+    enable = lib.mkEnableOption "Dev System-1 decision server (TypeSafe Jev-compatible HTTP API)";
 
     package = lib.mkOption {
       type = lib.types.package;
-      default = (pkgs.callPackage ./package.nix { }).laya-serve;
-      defaultText = lib.literalExpression "(pkgs.callPackage ./package.nix { }).laya-serve";
+      default = (pkgs.callPackage ./package.nix { }).dev-serve;
+      defaultText = lib.literalExpression "(pkgs.callPackage ./package.nix { }).dev-serve";
       description = ''
-        The laya-serve package to run. Built from the host's own `pkgs` (needs
+        The dev-serve package to run. Built from the host's own `pkgs` (needs
         `allowUnfree` for the prebuilt CUDA torch), so it works regardless of how
         the host provides `pkgs`.
       '';
@@ -72,7 +72,7 @@ in
       default = null;
       example = 16;
       description = ''
-        Cap torch intra-op threads for CPU inference (sets LAYA_THREADS and
+        Cap torch intra-op threads for CPU inference (sets DEV_THREADS and
         OMP_NUM_THREADS). Ignored in practice on CUDA. Keep this at or below the
         host's *physical* core count — oversubscribing the logical/hyperthread
         count is a large latency regression. For single-request latency, a value
@@ -90,7 +90,7 @@ in
     apiKeyFile = lib.mkOption {
       type = lib.types.nullOr lib.types.path;
       default = null;
-      example = lib.literalExpression "config.age.secrets.laya-api-key.path";
+      example = lib.literalExpression "config.age.secrets.dev-api-key.path";
       description = ''
         Path to a file containing a bearer token. When set, clients must send
         `Authorization: Bearer <token>`. Read via systemd LoadCredential, so it
@@ -106,27 +106,27 @@ in
 
     stateDirectory = lib.mkOption {
       type = lib.types.str;
-      default = "laya-serve";
+      default = "dev-serve";
       description = "Name under /var/lib for the Hugging Face weight cache (HF_HOME).";
     };
   };
 
   config = lib.mkIf cfg.enable {
-    systemd.services.laya-serve = {
-      description = "Laya System-1 decision server (Jev-compatible)";
+    systemd.services.dev-serve = {
+      description = "Dev System-1 decision server (Jev-compatible)";
       wantedBy = [ "multi-user.target" ];
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
 
       environment = {
-        LAYA_HOST = cfg.host;
-        LAYA_PORT = toString cfg.port;
-        LAYA_DEVICE = cfg.device;
-        LAYA_PRELOAD = if cfg.preload then "1" else "0";
-        LAYA_MODELS = lib.concatStringsSep "," cfg.models;
-        LAYA_AUTO_TASK = if cfg.autoTaskDetection then "1" else "0";
+        DEV_HOST = cfg.host;
+        DEV_PORT = toString cfg.port;
+        DEV_DEVICE = cfg.device;
+        DEV_PRELOAD = if cfg.preload then "1" else "0";
+        DEV_MODELS = lib.concatStringsSep "," cfg.models;
+        DEV_AUTO_TASK = if cfg.autoTaskDetection then "1" else "0";
       } // lib.optionalAttrs (cfg.threads != null) {
-        LAYA_THREADS = toString cfg.threads;
+        DEV_THREADS = toString cfg.threads;
         OMP_NUM_THREADS = toString cfg.threads;
       } // {
         HF_HOME = "/var/lib/${cfg.stateDirectory}/huggingface";

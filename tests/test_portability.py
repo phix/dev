@@ -1,6 +1,6 @@
 """Portability regressions: checkpoints saved by transformers 5, and non-CUDA devices.
 
-Two failures found while getting Laya to run on a macOS/Intel box, both silent or fatal depending
+Two failures found while getting Dev to run on a macOS/Intel box, both silent or fatal depending
 on the machine:
 
 1. transformers 5 records ModernBERT's RoPE bases as
@@ -12,7 +12,7 @@ on the machine:
 
 2. `torch.autocast(device_type=self.device.type, enabled=False)` raises on devices torch has no
    autocast backend for, even when disabled: 'User specified an unsupported autocast device_type
-   mps'. Laya only ever enables autocast on CUDA, but it still entered the context on every call,
+   mps'. Dev only ever enables autocast on CUDA, but it still entered the context on every call,
    so `predict()` died outright on the MPS device torch selects on Apple/AMD machines.
 """
 import os
@@ -25,8 +25,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import torch  # noqa: E402
 
-from laya import agent as _agent  # noqa: E402
-from laya.common import _apply_rope_config  # noqa: E402
+from dev import agent as _agent  # noqa: E402
+from dev.common import _apply_rope_config  # noqa: E402
 
 PASS, FAIL = [], []
 

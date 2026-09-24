@@ -13,8 +13,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import laya  # noqa: E402
-from laya import structured  # noqa: E402
+import dev  # noqa: E402
+from dev import structured  # noqa: E402
 
 PASS, FAIL = [], []
 
@@ -81,7 +81,7 @@ for optional in ("usage", "routing"):
           structured.DecisionResult.__dataclass_fields__[optional].default, None)
 
 # --------------------------------------------------------------- methods
-for label, cls in (("Agent", laya.Agent), ("Router", laya.Router)):
+for label, cls in (("Agent", dev.Agent), ("Router", dev.Router)):
     fn = getattr(cls, "decide", None)
     check_true("%s.decide exists" % label, callable(fn))
     if fn is not None:
@@ -89,15 +89,15 @@ for label, cls in (("Agent", laya.Agent), ("Router", laya.Router)):
         check_kwonly("%s.decide" % label, fn, "questions")
         check_kwonly("%s.decide" % label, fn, "return_details")
 
-from laya.onnx_agent import ONNXAgent  # noqa: E402
+from dev.onnx_agent import ONNXAgent  # noqa: E402
 
 check_true("ONNXAgent.decide exists", callable(getattr(ONNXAgent, "decide", None)))
 
 # --------------------------------------------------------------- exports
 for name in ("decide", "DecisionResult"):
-    check_true("__all__/%s" % name, name in laya.__all__)
-    check_true("laya.%s exists" % name, hasattr(laya, name))
-check_true("laya.structured.SchemaError is a ValueError", issubclass(structured.SchemaError, ValueError))
+    check_true("__all__/%s" % name, name in dev.__all__)
+    check_true("dev.%s exists" % name, hasattr(dev, name))
+check_true("dev.structured.SchemaError is a ValueError", issubclass(structured.SchemaError, ValueError))
 
 
 print("\n%d passed, %d failed" % (len(PASS), len(FAIL)))

@@ -21,15 +21,15 @@ RUN pip install "torch==${TORCH_VERSION}" --index-url https://download.pytorch.o
 
 WORKDIR /src
 COPY pyproject.toml setup.py README.md LICENSE ./
-COPY laya/ ./laya/
-# The `serve` extra puts `laya-serve` (POST /v1/systemone, GET /health) in the image, so
+COPY dev/ ./dev/
+# The `serve` extra puts `dev-serve` (POST /v1/systemone, GET /health) in the image, so
 # the same image can run a one-shot request or serve the Jev-compatible API. It adds
 # fastapi and uvicorn only; torch was installed above.
 RUN pip install ".[serve]" && pip check
 
 FROM ${PYTHON_IMAGE} AS runtime
 
-LABEL org.opencontainers.image.title="Laya Docker quickstart" \
+LABEL org.opencontainers.image.title="Dev Docker quickstart" \
       org.opencontainers.image.source="https://github.com/NandhaKishorM/laya" \
       org.opencontainers.image.licenses="Apache-2.0"
 
@@ -40,20 +40,20 @@ ENV PATH="/opt/venv/bin:$PATH" \
     USE_TORCH=1 \
     TOKENIZERS_PARALLELISM=false \
     OMP_NUM_THREADS=4 \
-    LAYA_DEVICE=cpu \
-    HF_HOME=/home/laya/.cache/huggingface
+    DEV_DEVICE=cpu \
+    HF_HOME=/home/dev/.cache/huggingface
 
-RUN groupadd --gid 10001 laya \
-    && useradd --uid 10001 --gid laya --create-home laya \
-    && mkdir -p /home/laya/.cache/huggingface \
-    && chown -R laya:laya /home/laya/.cache
+RUN groupadd --gid 10001 dev \
+    && useradd --uid 10001 --gid dev --create-home dev \
+    && mkdir -p /home/dev/.cache/huggingface \
+    && chown -R dev:dev /home/dev/.cache
 
 COPY --from=build /opt/venv /opt/venv
-COPY LICENSE /usr/share/doc/laya/LICENSE
-COPY examples/docker/ /opt/laya/examples/
-COPY docker/entrypoint.py /opt/laya/entrypoint.py
-USER laya
-WORKDIR /home/laya
+COPY LICENSE /usr/share/doc/dev/LICENSE
+COPY examples/docker/ /opt/dev/examples/
+COPY docker/entrypoint.py /opt/dev/entrypoint.py
+USER dev
+WORKDIR /home/dev
 
-ENTRYPOINT ["python", "/opt/laya/entrypoint.py"]
-CMD ["python", "/opt/laya/examples/quickstart.py"]
+ENTRYPOINT ["python", "/opt/dev/entrypoint.py"]
+CMD ["python", "/opt/dev/examples/quickstart.py"]

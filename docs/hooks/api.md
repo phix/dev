@@ -1,11 +1,11 @@
 # API reference
 
-Everything on this page is importable from `laya` (the common names) or `laya.hooks` (the
+Everything on this page is importable from `dev` (the common names) or `dev.hooks` (the
 whole surface).
 
 ```python
-from laya import PredictContext, PredictHook, Hook
-from laya.hooks import HOOK_EVENTS, normalise_hooks, dispatch, aggregate_usage
+from dev import PredictContext, PredictHook, Hook
+from dev.hooks import HOOK_EVENTS, normalise_hooks, dispatch, aggregate_usage
 ```
 
 - [PredictContext](#predictcontext)
@@ -107,7 +107,7 @@ If a hook defines one of the six as a non-callable, configuration fails fast (se
 Subclass it and override only the events you need.
 
 ```python
-from laya import BaseHook
+from dev import BaseHook
 
 class Audit(BaseHook):
     def on_predict_end(self, ctx):
@@ -146,12 +146,12 @@ the block raises.
 
 ## Process-wide defaults
 
-`laya.hooks` keeps a small process-wide registry, so a tracer, metrics hook or tenant tagger does
+`dev.hooks` keeps a small process-wide registry, so a tracer, metrics hook or tenant tagger does
 not have to be threaded through every `Agent` and `Router`. Defaults run **first**, then the
 hooks installed on the instance, then per-call hooks.
 
 ```python
-from laya import hooks
+from dev import hooks
 
 hooks.set_default_hooks(hooks=[Tracer()])          # replaces the set, accepts the hooks= arguments
 hooks.add_default_hook(Metrics())                  # appends
@@ -237,7 +237,7 @@ router.loaded               # list of resident checkpoint names
 ### ONNXAgent
 
 ```python
-ONNXAgent(model_id_or_path, onnx_path="laya.onnx", subfolder=None,
+ONNXAgent(model_id_or_path, onnx_path="dev.onnx", subfolder=None,
           hooks=None, on_predict_start=None, on_predict_end=None,
           hooks_raise=True, hooks_concurrent=True)
 
@@ -305,7 +305,7 @@ aggregate_usage(results) -> {"input_tokens": int, "output_tokens": int}
 `aggregate_usage` sums per-state usage blocks.
 
 ```python
-from laya.hooks import normalise_hooks, dispatch, PredictContext
+from dev.hooks import normalise_hooks, dispatch, PredictContext
 
 hooks = normalise_hooks(on_predict_start=[log, redact])
 ctx = PredictContext(states=["..."], questions={...})

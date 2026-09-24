@@ -14,7 +14,7 @@ class AuditTests(unittest.TestCase):
         verify_archive()
 
     def test_archived_results(self):
-        expected = {'jev': {'choice': 64, 'four_noul': 63}, 'laya': {'choice': 20, 'four_noul': 18}}
+        expected = {'jev': {'choice': 64, 'four_noul': 63}, 'dev': {'choice': 20, 'four_noul': 18}}
         for backend, modes in expected.items():
             result = audit_run(ROOT / 'results/v1' / backend)
             for mode, correct in modes.items():
@@ -22,8 +22,8 @@ class AuditTests(unittest.TestCase):
                 self.assertEqual(result[mode]['failed_requests'], 0)
 
     def fixture(self, folder):
-        metadata = json.loads((ROOT / 'results/v1/laya/metadata.json').read_text(encoding='utf-8'))
-        rows = [json.loads(x) for x in (ROOT / 'results/v1/laya/raw.jsonl').read_text(encoding='utf-8').splitlines()]
+        metadata = json.loads((ROOT / 'results/v1/dev/metadata.json').read_text(encoding='utf-8'))
+        rows = [json.loads(x) for x in (ROOT / 'results/v1/dev/raw.jsonl').read_text(encoding='utf-8').splitlines()]
         rows = [r for r in rows if r['mode'] == 'choice' and r['repeat'] == 0]
         metadata.update(repeats=1, modes=['choice'], evaluated_ids=[r['id'] for r in rows])
         (folder / 'metadata.json').write_text(json.dumps(metadata), encoding='utf-8')

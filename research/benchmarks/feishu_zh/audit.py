@@ -84,7 +84,7 @@ def main():
     args = parser.parse_args()
     if args.run_dir is None:
         verify_archive()
-    folders = [args.run_dir] if args.run_dir else [ROOT / 'results/v1' / name for name in ['jev', 'laya']]
+    folders = [args.run_dir] if args.run_dir else [ROOT / 'results/v1' / name for name in ['jev', 'dev']]
     results = {p.name: audit_run(p) for p in folders}
     if args.write_summary:
         if args.write_summary.exists():

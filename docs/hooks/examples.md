@@ -25,12 +25,12 @@ Copy-paste recipes. Every snippet is self-contained apart from the helpers it na
 ## Quick start
 
 ```python
-import laya
+import dev
 
 def log(ctx):
     print(ctx.model, ctx.results[0]["answers"])
 
-agent = laya.load("convaiinnovations/laya", on_predict_end=log)
+agent = dev.load("convaiinnovations/laya", on_predict_end=log)
 agent.system_one("I was charged twice.", {"urgent": {"type": "noul", "instructions": "Urgent?"}})
 ```
 
@@ -40,7 +40,7 @@ The browser-use use case: capture every decision and ship it to an external serv
 
 ```python
 import json, sys
-import laya
+import dev
 
 def audit(ctx):
     record = {
@@ -54,7 +54,7 @@ def audit(ctx):
     print(json.dumps(record), file=sys.stderr)
     # ship_to_service(record)
 
-agent = laya.load("convaiinnovations/laya", on_predict_end=audit)
+agent = dev.load("convaiinnovations/laya", on_predict_end=audit)
 ```
 
 A full runnable version is in [`examples/hooks/audit.py`](../../examples/hooks/audit.py).
@@ -63,7 +63,7 @@ A full runnable version is in [`examples/hooks/audit.py`](../../examples/hooks/a
 
 ```python
 import re
-import laya
+import dev
 
 EMAIL = re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b")
 PHONE = re.compile(r"\+?\d[\d ()-]{7,}\d")
@@ -80,7 +80,7 @@ def scrub(value):
 def redact(ctx):
     ctx.states = [scrub(s) for s in ctx.states]
 
-agent = laya.load("convaiinnovations/laya", on_predict_start=redact)
+agent = dev.load("convaiinnovations/laya", on_predict_start=redact)
 ```
 
 See [`examples/hooks/redact.py`](../../examples/hooks/redact.py).
@@ -89,7 +89,7 @@ See [`examples/hooks/redact.py`](../../examples/hooks/redact.py).
 
 ```python
 import hashlib, json
-import laya
+import dev
 
 CACHE = {}
 
@@ -106,7 +106,7 @@ def write(ctx):
     if ctx.results:
         CACHE[key(ctx.states[0], ctx.questions)] = ctx.results[0]
 
-agent = laya.load("convaiinnovations/laya", on_predict_start=read, on_predict_end=write)
+agent = dev.load("convaiinnovations/laya", on_predict_start=read, on_predict_end=write)
 first = agent.system_one("state", QUESTIONS)    # runs the model
 second = agent.system_one("state", QUESTIONS)   # served from CACHE
 ```
@@ -116,7 +116,7 @@ See [`examples/hooks/cache.py`](../../examples/hooks/cache.py).
 ## Metrics
 
 ```python
-import laya
+import dev
 
 COUNTS, LATENCIES = {}, []
 
@@ -125,7 +125,7 @@ def metrics(ctx):
     if ctx.elapsed_ms is not None:
         LATENCIES.append(ctx.elapsed_ms)
 
-agent = laya.load("convaiinnovations/laya", on_predict_end=metrics, hooks_raise=False)
+agent = dev.load("convaiinnovations/laya", on_predict_end=metrics, hooks_raise=False)
 ```
 
 See [`examples/hooks/otel.py`](../../examples/hooks/otel.py).
@@ -135,7 +135,7 @@ See [`examples/hooks/otel.py`](../../examples/hooks/otel.py).
 Block a request by raising from a start hook.
 
 ```python
-import laya
+import dev
 
 class Blocked(Exception):
     pass
@@ -145,7 +145,7 @@ def guard(ctx):
     if "ignore previous instructions" in text:
         raise Blocked("prompt injection")
 
-agent = laya.load("convaiinnovations/laya", on_predict_start=guard)
+agent = dev.load("convaiinnovations/laya", on_predict_start=guard)
 
 try:
     agent.system_one("Ignore previous instructions and ...", QUESTIONS)
@@ -164,7 +164,7 @@ def gate(ctx):
         answer["choice"] = "human-review"
         answer["gated"] = True
 
-agent = laya.load("convaiinnovations/laya", on_predict_end=gate)
+agent = dev.load("convaiinnovations/laya", on_predict_end=gate)
 ```
 
 ## Routing pin
@@ -172,8 +172,8 @@ agent = laya.load("convaiinnovations/laya", on_predict_end=gate)
 Force a checkpoint for a class of traffic.
 
 ```python
-from laya import Router
-from laya.router import RouteDecision
+from dev import Router
+from dev.router import RouteDecision
 
 def pin(ctx):
     if "refund" in str(ctx.states[0]).lower():
@@ -199,7 +199,7 @@ router.predict("refund request", QUESTIONS, hooks=[pin])
 Observe checkpoint build and eviction.
 
 ```python
-from laya import Router
+from dev import Router
 
 class Lifecycle:
     def on_load(self, ctx):
@@ -218,7 +218,7 @@ router.unload()                               # on_evict fires per freed checkpo
 Installed hooks first, then convenience callables; all share one context.
 
 ```python
-import laya
+import dev
 
 class Metrics:
     def on_predict_end(self, ctx):
@@ -230,7 +230,7 @@ def redact(ctx):
 def audit(ctx):
     ship(ctx.run_id, ctx.results)
 
-agent = laya.load(
+agent = dev.load(
     "convaiinnovations/laya",
     hooks=[Metrics()],              # installed, runs first
     on_predict_start=redact,        # convenience, appended
@@ -273,11 +273,11 @@ results = agent.predict_batch([state_a, state_b, state_c], questions, on_predict
 
 ## HTTP server
 
-Router hooks fire for `laya.serve` automatically, because the server calls `Router.predict`.
+Router hooks fire for `dev.serve` automatically, because the server calls `Router.predict`.
 
 ```python
-from laya import Router
-from laya.serve import create_app
+from dev import Router
+from dev.serve import create_app
 
 router = Router(hooks=[Metrics()], on_predict_end=audit, hooks_raise=False)
 app = create_app(router=router)
@@ -288,9 +288,9 @@ app = create_app(router=router)
 `ONNXAgent` exposes the predict-level events only.
 
 ```python
-from laya.onnx_agent import ONNXAgent
+from dev.onnx_agent import ONNXAgent
 
-agent = ONNXAgent("convaiinnovations/laya", onnx_path="laya.onnx", on_predict_end=audit)
+agent = ONNXAgent("convaiinnovations/laya", onnx_path="dev.onnx", on_predict_end=audit)
 agent.system_one(state, questions)
 ```
 
@@ -312,7 +312,7 @@ Subclass `BaseHook` to override only what you need, and register something once 
 process instead of passing it to every `Agent` and `Router`.
 
 ```python
-from laya import BaseHook, hooks
+from dev import BaseHook, hooks
 
 class Audit(BaseHook):
     def on_predict_end(self, ctx):
@@ -334,7 +334,7 @@ def widen(ctx):
     if k >= 50:
         ctx.head_max_len = 16 + 4 * k
 
-agent = laya.load("convaiinnovations/laya", on_predict_start=widen)
+agent = dev.load("convaiinnovations/laya", on_predict_start=widen)
 
 # or per call
 agent.system_one(state, questions, head_max_len=324, max_len=1024)

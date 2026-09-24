@@ -7,8 +7,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import laya  # noqa: E402
-from laya.structured import (  # noqa: E402
+import dev  # noqa: E402
+from dev.structured import (  # noqa: E402
     SchemaError,
     answers_to_json,
     answer_to_pydantic,
@@ -185,11 +185,11 @@ except ImportError:
 
 
 # --------------------------------------------------------------- exports and methods
-check("export/decide", callable(laya.decide), True)
-check("export/DecisionResult", hasattr(laya, "DecisionResult"), True)
-check("method/Agent.decide", callable(getattr(laya.Agent, "decide", None)), True)
-check("method/Router.decide", callable(getattr(laya.Router, "decide", None)), True)
-from laya.onnx_agent import ONNXAgent  # noqa: E402
+check("export/decide", callable(dev.decide), True)
+check("export/DecisionResult", hasattr(dev, "DecisionResult"), True)
+check("method/Agent.decide", callable(getattr(dev.Agent, "decide", None)), True)
+check("method/Router.decide", callable(getattr(dev.Router, "decide", None)), True)
+from dev.onnx_agent import ONNXAgent  # noqa: E402
 
 check("method/ONNXAgent.decide", callable(getattr(ONNXAgent, "decide", None)), True)
 

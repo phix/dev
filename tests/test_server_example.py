@@ -1,4 +1,4 @@
-"""Smoke test for examples/server.py: does the demo API wiring still match laya's
+"""Smoke test for examples/server.py: does the demo API wiring still match dev's
 public surface (Router, DEFAULT_MODELS, QTYPES)?
 
 Loads real weights for the `english` checkpoint only (skips multilingual/typed-decisions
@@ -14,11 +14,11 @@ import sys
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 os.environ.setdefault("USE_TF", "0")
 os.environ.setdefault("USE_TORCH", "1")
-# server._CFG["preload"] defaults to true (LAYA_PRELOAD unset), which preloads all three
+# server._CFG["preload"] defaults to true (DEV_PRELOAD unset), which preloads all three
 # checkpoints in the app's lifespan before the first request -- overriding it here is what
 # keeps this an "english only" test: every payload below is English, so lazy loading only
 # ever touches the one checkpoint this test actually needs.
-os.environ.setdefault("LAYA_PRELOAD", "0")
+os.environ.setdefault("DEV_PRELOAD", "0")
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
@@ -36,7 +36,7 @@ def main():
     try:
         from fastapi.testclient import TestClient
     except ImportError:
-        print("SKIP: fastapi/httpx not installed -- pip install laya[serve] httpx")
+        print("SKIP: fastapi/httpx not installed -- pip install dev[serve] httpx")
         return 0
 
     import server  # examples/server.py
@@ -57,7 +57,7 @@ def main():
         ok("GET /presets -> 200", r.status_code == 200, str(r.status_code))
         presets = r.json()
         expected_presets = {"triage", "email", "guard", "moderation", "router"}
-        ok("GET /presets has all five laya.presets workflows", set(presets) == expected_presets, str(set(presets)))
+        ok("GET /presets has all five dev.presets workflows", set(presets) == expected_presets, str(set(presets)))
         ok(
             "GET /presets entries have label/state/questions",
             all({"label", "state", "questions"} <= set(p) for p in presets.values()),
@@ -89,7 +89,7 @@ def main():
         r = client.post("/predict", json={"state": "hi", "questions": {"x": {"type": "bogus", "instructions": "?"}}})
         ok("POST /predict rejects unknown qtype with 422", r.status_code == 422, str(r.status_code))
 
-        # A choice/score question with no criteria used to reach laya.render_options and raise
+        # A choice/score question with no criteria used to reach dev.render_options and raise
         # there (AttributeError on crit.items()), surfacing as a 500 instead of a validation
         # error -- this is what the criteria-required model_validator on Question now catches.
         r = client.post("/predict", json={"state": "hi", "questions": {"x": {"type": "choice", "instructions": "?"}}})
@@ -110,7 +110,7 @@ def main():
         ok("POST /gui (form) -> 200", r.status_code == 200, str(r.status_code) + " " + r.text[:200])
         ok("POST /gui is html", "<html" in r.text.lower())
 
-        # laya.guard_questions()'s "topic" criteria uses None as a placeholder for "no
+        # dev.guard_questions()'s "topic" criteria uses None as a placeholder for "no
         # description" ({"coding": None, ...}) -- this is what caught two bugs: the
         # Question model rejecting None criteria values (fixed: Dict[str, Optional[str]]),
         # and _criteria_legend rendering the literal string "None" in the UI.

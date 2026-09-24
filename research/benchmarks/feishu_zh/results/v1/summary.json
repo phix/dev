@@ -819,7 +819,7 @@
       }
     }
   },
-  "laya": {
+  "dev": {
     "choice": {
       "n": 64,
       "correct": 20,

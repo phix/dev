@@ -10,7 +10,7 @@
 
 ## 先核验，零下载、零费用
 
-从 Laya 仓库根目录执行：
+从 Dev 仓库根目录执行：
 
 ```bash
 python research/benchmarks/feishu_zh/audit.py
@@ -19,22 +19,22 @@ python -m unittest discover -s research/benchmarks/feishu_zh/tests -v
 
 只需 Python 3.10+，不依赖模型、API Key 或第三方库。检查冻结哈希、样本与请求配对、原始响应解码、完整分母、概率有效性，并重新计分。
 
-| 首次固定结果 | Laya 多语言版 | Jev 1.13.0 |
+| 首次固定结果 | Dev 多语言版 | Jev 1.13.0 |
 |---|---:|---:|
 | 单选择题 | 20/64 | 64/64 |
 | 四问组合 | 18/64 | 63/64 |
 
-这是 **2026-09-21 的历史快照，不是当前 main 分支的成绩**。三次重复全部保留，不挑最好一次；Jev 单选另一次为63/64。Laya用本机M4 MPS，Jev耗时含网络，两者不是同硬件测试。完整版本、配置、局限在英文说明及metadata中。
+这是 **2026-09-21 的历史快照，不是当前 main 分支的成绩**。三次重复全部保留，不挑最好一次；Jev 单选另一次为63/64。Dev用本机M4 MPS，Jev耗时含网络，两者不是同硬件测试。完整版本、配置、局限在英文说明及metadata中。
 
 ## 自己跑一遍
 
 按英文说明下载/准备本地多语言checkpoint，然后先试两题：
 
 ```bash
-PYTHONPATH=. python research/benchmarks/feishu_zh/run.py --backend laya \
+PYTHONPATH=. python research/benchmarks/feishu_zh/run.py --backend dev \
   --checkpoint "$CHECKPOINT" --device cpu --limit 2 --repeats 1 --modes choice \
-  --output /tmp/feishu-laya-smoke
-python research/benchmarks/feishu_zh/audit.py --run-dir /tmp/feishu-laya-smoke
+  --output /tmp/feishu-dev-smoke
+python research/benchmarks/feishu_zh/audit.py --run-dir /tmp/feishu-dev-smoke
 ```
 
 完整评测省略limit/repeats/modes参数。可将device改为mps或cuda；每次使用新输出目录。脚本不自动下载模型，记录实际代码/权重哈希，不沿用历史版本信息。Jev比较是可选且收费的，详见[英文入口](README.md#optional-jev-comparison)。

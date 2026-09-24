@@ -1,12 +1,12 @@
 # Contributing
 
-Thanks for helping improve Laya. This guide keeps reviews fast and the history clean.
+Thanks for helping improve Dev. This guide keeps reviews fast and the history clean.
 
 By taking part you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Scope
 
-Laya is a fast, local, on-device decision engine. Keep additions in that spirit: they should run
+Dev is a fast, local, on-device decision engine. Keep additions in that spirit: they should run
 in the user's own process or on their own hardware, with no dependency on a hosted service or an
 external API. A feature that only works against a hosted backend is out of scope for the core
 package; it belongs in a separate integration or a community project.
@@ -21,7 +21,7 @@ package; it belongs in a separate integration or a community project.
 
 ## Development setup
 
-Laya supports Python 3.10 to 3.13. Use a virtual environment so nothing leaks into your system.
+Dev supports Python 3.10 to 3.13. Use a virtual environment so nothing leaks into your system.
 
 ```bash
 python -m venv .venv
@@ -52,13 +52,13 @@ and `tests/test_truncation_direction.py`.
 The full set, including the ones the CI runs, is in [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 A handful of suites need hardware or local weights and are skipped otherwise: `tests/test_fast.py`
 needs CUDA, and `tests/test_local_e2e.py` and `tests/test_mcp_local_e2e.py` expect checkpoints under
-`~/laya_models`.
+`~/dev_models`.
 
 Before opening a pull request, run the lint and compile checks the CI runs:
 
 ```bash
-ruff check laya/ --select=E9,F63,F7,F82,F401,F811 --line-length=120
-python -m compileall -q laya/ tests/
+ruff check dev/ --select=E9,F63,F7,F82,F401,F811 --line-length=120
+python -m compileall -q dev/ tests/
 ```
 
 ## Style
@@ -114,7 +114,7 @@ Use the issue templates and include:
 
 - What you expected and what you got.
 - A minimal reproduction, ideally a short script.
-- Your Laya version (`python -c "import laya; print(laya.__version__)"`), Python version, OS, and
+- Your Dev version (`python -c "import dev; print(dev.__version__)"`), Python version, OS, and
   device or backend (CPU, CUDA, MPS, ONNX).
 
 ## Reviews

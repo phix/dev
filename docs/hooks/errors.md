@@ -25,10 +25,10 @@ It is set per instance and can be overridden per call (`hooks_raise=` on `predic
 
 ```python
 # strict: a broken audit hook fails the request
-laya.load("convaiinnovations/laya", on_predict_end=audit, hooks_raise=True)
+dev.load("convaiinnovations/laya", on_predict_end=audit, hooks_raise=True)
 
 # lenient: telemetry must never take down a served request
-laya.load("convaiinnovations/laya", on_predict_end=metrics, hooks_raise=False)
+dev.load("convaiinnovations/laya", on_predict_end=metrics, hooks_raise=False)
 ```
 
 `dispatch` catches `Exception`. Anything that is not an `Exception` (see
@@ -118,7 +118,7 @@ With `hooks_raise=False`, each failing hook emits one `RuntimeWarning` naming th
 event:
 
 ```
-laya: hook Metrics.on_predict_end failed: connection reset
+dev: hook Metrics.on_predict_end failed: connection reset
 ```
 
 The warning is emitted once per failure, not once per hook definition, so a flaky hook under

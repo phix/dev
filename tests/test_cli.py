@@ -6,7 +6,7 @@ from contextlib import redirect_stderr, redirect_stdout
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from laya import cli  # noqa: E402
+from dev import cli  # noqa: E402
 
 PASS, FAIL = [], []
 
@@ -77,7 +77,7 @@ class BrokenRouter:
 
 code, out, err, stub = run_cli(["some text"], router=BrokenRouter())
 check("error: exit code 2", code == 2, "got %r" % code)
-check("error: names the failure", "could not run Laya" in err, err)
+check("error: names the failure", "could not run Dev" in err, err)
 check("error: points at the fix", "Hugging Face hub" in err, err)
 
 # --------------------------------------------------------------------- explicit flags

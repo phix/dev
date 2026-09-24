@@ -1,8 +1,8 @@
-"""Presentation-sensitivity regression checks for a Laya checkpoint.
+"""Presentation-sensitivity regression checks for a Dev checkpoint.
 
 Why this exists
 ---------------
-``laya-multilingual``'s ``score`` head has a learned prior against the first-listed
+``dev-multilingual``'s ``score`` head has a learned prior against the first-listed
 level (#131). The fix is a position-balanced retrain, and this is the check that says
 whether a retrained checkpoint removed the prior. It needs no labelled data: every
 input is fixed in this file, and both checks compare the checkpoint against itself
@@ -25,7 +25,7 @@ Checks
     metric is the observed first-slot rate.
 
 Both metrics read raw marker logits (before temperature) through
-``laya_eval.score_cases``, the same forward pass ``research/scripts/bench_local.py``
+``dev_eval.score_cases``, the same forward pass ``research/scripts/bench_local.py``
 uses. ``parity`` checks that path against ``Agent.system_one`` before anything is
 reported.
 
@@ -48,12 +48,12 @@ import sys
 import time
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
-# Same path handling as laya_eval.py: allow running this file directly.
+# Same path handling as dev_eval.py: allow running this file directly.
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-from research.eval.laya_eval import score_cases, softmax_t, temperature_for  # noqa: E402
+from research.eval.dev_eval import score_cases, softmax_t, temperature_for  # noqa: E402
 
 # Fixed English states written for this check. Urgency varies on purpose: a slot
 # prior has to show through states whose honest answer is low, middle and high.
@@ -210,7 +210,7 @@ def parity(agent, states: Sequence[str] = STATES) -> float:
 
     system_one rounds probabilities to 4 decimals, so agreement shows up as <= 5e-5.
     """
-    from laya.common import QTYPES
+    from dev.common import QTYPES
 
     questions = {"identical": identical_question(IDENTICAL_TEXTS[0], 3),
                  "levels": {"type": "score", "instructions": INSTRUCTIONS, "criteria": list(LEVELS)}}
@@ -228,7 +228,7 @@ def parity(agent, states: Sequence[str] = STATES) -> float:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="presentation-checks",
-        description="Label-free presentation-sensitivity checks for a Laya checkpoint.")
+        description="Label-free presentation-sensitivity checks for a Dev checkpoint.")
     parser.add_argument("--model", default="convaiinnovations/laya",
                         help="checkpoint repo id or local path")
     parser.add_argument("--subfolder", default=None,
@@ -246,10 +246,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print("unknown checks: %s" % ", ".join(unknown), file=sys.stderr)
         return 2
 
-    import laya
+    import dev
 
     started = time.time()
-    agent = laya.load(args.model, device=args.device, subfolder=args.subfolder)
+    agent = dev.load(args.model, device=args.device, subfolder=args.subfolder)
     agent.model.eval()
     worst = parity(agent)
     report = run_checks(agent_score_fn(agent), names)
@@ -263,7 +263,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             "identical_texts": list(IDENTICAL_TEXTS),
             "identical_ks": list(IDENTICAL_KS),
             "levels": list(LEVELS),
-            "laya_version": getattr(laya, "__version__", "unknown"),
+            "dev_version": getattr(dev, "__version__", "unknown"),
         },
         "parity_max_abs_diff": worst,
         **report,

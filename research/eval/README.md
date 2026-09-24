@@ -162,11 +162,11 @@ forcing 256 or 512 drops it to 0.79.
 
 ## Tests
 
-`research/eval/test_laya_eval.py` covers the pure functions and runs offline — no
+`research/eval/test_dev_eval.py` covers the pure functions and runs offline — no
 checkpoint, no network:
 
 ```bash
-python research/eval/test_laya_eval.py     # 64 passed, 0 failed
+python research/eval/test_dev_eval.py     # 64 passed, 0 failed
 ```
 
 It pins the upstream constants (seed 13, 20 options, the exact instruction string),
@@ -191,7 +191,7 @@ not just against this harness's own arithmetic.
   the divergence was found, which made it the only one of the four implementations that
   binned differently. It now matches `dev.common.ece_score`,
   `research/scripts/bench_local.py` and `research/scripts/build_benchmark_nb.py`, and
-  `test_laya_eval.py` asserts that agreement.
+  `test_dev_eval.py` asserts that agreement.
 
 ### The temperature clamp, measured both ways
 

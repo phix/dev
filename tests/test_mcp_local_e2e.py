@@ -180,7 +180,7 @@ def main():
                 ok("e2e/status_checkpoint_devices_expected", len(cdevs) >= 1
                    and all(d == EXPECT_DEVICE for d in cdevs.values()),
                    "expected %s, got %r" % (EXPECT_DEVICE, cdevs))
-            ok("e2e/status_laya_version", bool((payload.get("package_versions") or {}).get("dev")),
+            ok("e2e/status_dev_version", bool((payload.get("package_versions") or {}).get("dev")),
                repr(payload.get("package_versions")))
             ok("e2e/status_loaded", isinstance(payload.get("loaded"), list) and len(payload["loaded"]) >= 1,
                repr(payload.get("loaded")))

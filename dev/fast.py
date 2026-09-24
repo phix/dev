@@ -173,7 +173,7 @@ class FastDev:
                 s_out = self._encode(s_ids, s_lens, s_q)
             g = self.graphs[key] = (graph, s_ids, s_lens, s_q, s_out)
             if self.verbose:
-                print(f"[fast_laya] captured CUDA graph for shape {key}", file=sys.stderr)
+                print(f"[fast_dev] captured CUDA graph for shape {key}", file=sys.stderr)
         graph, s_ids, s_lens, s_q, s_out = g
         s_ids.copy_(ids); s_lens.copy_(lens); s_q.copy_(qtype)
         graph.replay()

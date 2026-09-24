@@ -48,9 +48,9 @@ from .tools import (
 try:
     _DEV_VERSION = _metadata.version("dev")
 except Exception:  # running from a source checkout without install metadata
-    import dev as _laya
+    import dev as _dev
 
-    _DEV_VERSION = getattr(_laya, "__version__", "")
+    _DEV_VERSION = getattr(_dev, "__version__", "")
 
 server = MCPServer("dev", version=_DEV_VERSION)
 

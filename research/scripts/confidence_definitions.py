@@ -57,7 +57,7 @@ def load(model):
         return [json.loads(line) for line in f if line.strip()]
 
 
-def is_laya(rows):
+def is_dev(rows):
     """The invariants below describe Dev's own answer shape, so they are only checked there."""
     return any(str((r.get("response") or {}).get("model", "")).startswith("dev") for r in rows)
 
@@ -172,7 +172,7 @@ def main():
             continue
         report["models"][model] = m = measure(ch)
 
-        if not is_laya(rows):
+        if not is_dev(rows):
             # Another engine's `confidence` is its own business; only the comparison table above
             # is meaningful for it.
             m["invariants_checked"] = False

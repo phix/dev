@@ -5,7 +5,7 @@ CI next to the other suites. The model-dependent paths (`score_cases`,
 `run_language`) are exercised by `tests/test_local_e2e.py` when a checkpoint is
 present.
 
-Run: python research/eval/test_laya_eval.py
+Run: python research/eval/test_dev_eval.py
 """
 import os
 import random
